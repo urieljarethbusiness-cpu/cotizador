@@ -3,41 +3,54 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { hash } from "bcryptjs";
 
 const adapter = new PrismaPg({
-  host: "localhost",
-  port: 5432,
-  user: "postgres",
-  password: "postgres",
-  database: "cotizador_e3",
+  host: process.env.DB_HOST || "localhost",
+  port: parseInt(process.env.DB_PORT || "5432"),
+  user: process.env.DB_USER || "postgres",
+  password: process.env.DB_PASSWORD || "postgres",
+  database: process.env.DB_NAME || "cotizador_e3",
 });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("Seeding database...");
 
-  const adminHash = await hash("cee564F1.", 10);
-  const asesorHash = await hash("asesor123", 10);
+  // Credentials come from env. Without SEED_*_PASSWORD the user is created
+  // with a default password only if it doesn't exist yet (never overwritten).
+  const adminEmail = process.env.SEED_ADMIN_EMAIL || "admin@e3.local";
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+  if (!adminPassword) {
+    console.warn(
+      `  AVISO: SEED_ADMIN_PASSWORD no definida. Si el usuario ${adminEmail} no existe, se creará con password "admin123" — cámbiala de inmediato.`
+    );
+  }
+  const adminHash = await hash(adminPassword || "admin123", 10);
 
   await prisma.user.upsert({
-    where: { email: "urieljareth@gmail.com" },
-    update: { password: adminHash },
+    where: { email: adminEmail },
+    update: adminPassword ? { password: adminHash } : {},
     create: {
-      email: "urieljareth@gmail.com",
+      email: adminEmail,
       password: adminHash,
-      name: "Uriel Jareth Alvarado Ortiz",
+      name: process.env.SEED_ADMIN_NAME || "Administrador",
       role: "admin",
     },
   });
 
-  await prisma.user.upsert({
-    where: { email: "asesor@urieljareth.com" },
-    update: { password: asesorHash },
-    create: {
-      email: "asesor@urieljareth.com",
-      password: asesorHash,
-      name: "Lorena Soto",
-      role: "asesor",
-    },
-  });
+  const asesorEmail = process.env.SEED_ASESOR_EMAIL;
+  if (asesorEmail) {
+    const asesorPassword = process.env.SEED_ASESOR_PASSWORD;
+    const asesorHash = await hash(asesorPassword || "asesor123", 10);
+    await prisma.user.upsert({
+      where: { email: asesorEmail },
+      update: asesorPassword ? { password: asesorHash } : {},
+      create: {
+        email: asesorEmail,
+        password: asesorHash,
+        name: process.env.SEED_ASESOR_NAME || "Asesor",
+        role: "asesor",
+      },
+    });
+  }
 
   // ── CATEGORIAS (must be created BEFORE servicios for FK) ──
   const categorias = [

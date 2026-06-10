@@ -32,12 +32,31 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
+
+# python api (api/)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
 
 /src/generated/prisma
+
+# business files (never commit quotation spreadsheets)
+*.xlsx
+
+# editor temp files
+*.tmp.*
+
+# claude local settings
+.claude/settings.local.json
