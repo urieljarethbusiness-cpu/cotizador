@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Save,
@@ -14,6 +14,9 @@ import {
   Mail,
   Phone,
   Package,
+  Clock,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import clsx from "clsx";
 import {
@@ -24,7 +27,12 @@ import {
   calcularVigencia,
   generarNumeroCotizacion,
   bucefaloPrecio,
+  calcularPrecioHoras,
+  describirRetainer,
+  calcularTotalesOpcion,
+  TARIFA_HORA_DEFAULT,
 } from "@/lib/calculators";
+import type { MetaOpcion } from "@/lib/calculators";
 import {
   useCotizacionStore,
   ServicioSeleccionado,
@@ -32,6 +40,7 @@ import {
 import {
   ExportPDFButtonDraft,
   ExportExcelButtonDraft,
+  PreviewPDFButtonDraft,
 } from "@/components/ExportButtons";
 
 export interface ServicioCatalogo {
@@ -75,6 +84,8 @@ export interface ExistingData {
   planBucefaloNivel: string | null;
   estado: string;
   servicios: ServicioSeleccionado[];
+  esDoble?: boolean;
+  opciones?: { "1"?: MetaOpcion; "2"?: MetaOpcion };
 }
 
 export interface PaqueteServicio {
@@ -153,11 +164,18 @@ export function CotizacionForm({
       store.setField("incluirFinanciamiento", existingData.incluirFinanciamiento);
       store.setField("observaciones", existingData.observaciones);
       store.setField("planBucefaloNivel", existingData.planBucefaloNivel);
+      store.setField("esDoble", existingData.esDoble ?? false);
+      store.setField("opciones", existingData.opciones ?? {});
       store.setServicios(existingData.servicios);
     }
   }, [mode, existingData]);
 
-  const selectedIds = new Set(store.draft.servicios.map((s) => s.catalogoId));
+  const esDoble = store.draft.esDoble;
+
+  const selectedIds = useMemo(
+    () => new Set(store.draft.servicios.map((s) => s.catalogoId)),
+    [store.draft.servicios]
+  );
 
   const toggleFase = (fase: number) => {
     setExpandedFases((prev) => {
@@ -197,6 +215,99 @@ export function CotizacionForm({
     store.updateServicio(catalogoId, { precio });
   };
 
+  const handleAddCustom = () => {
+    const id = `custom-${crypto.randomUUID()}`;
+    store.toggleServicio({
+      catalogoId: id,
+      nombre: "",
+      fase: 1,
+      tipoPago: "unico",
+      precio: calcularPrecioHoras(1, TARIFA_HORA_DEFAULT),
+      tiempoEntrega: "A convenir",
+      entregables: [],
+      esPersonalizado: true,
+      horas: 1,
+      tarifaHora: TARIFA_HORA_DEFAULT,
+    });
+  };
+
+  const handleCustomHoras = (catalogoId: string, horas: number) => {
+    const s = store.draft.servicios.find((x) => x.catalogoId === catalogoId);
+    store.updateServicio(catalogoId, {
+      horas,
+      precio: calcularPrecioHoras(horas, s?.tarifaHora ?? TARIFA_HORA_DEFAULT),
+    });
+  };
+
+  const handleCustomTarifa = (catalogoId: string, tarifaHora: number) => {
+    const s = store.draft.servicios.find((x) => x.catalogoId === catalogoId);
+    store.updateServicio(catalogoId, {
+      tarifaHora,
+      precio: calcularPrecioHoras(s?.horas ?? 0, tarifaHora),
+    });
+  };
+
+  const handleAddRetainer = () => {
+    const id = `custom-${crypto.randomUUID()}`;
+    store.toggleServicio({
+      catalogoId: id,
+      nombre: "",
+      fase: 1,
+      tipoPago: "mensual",
+      precio: 0,
+      tiempoEntrega: "Mensual",
+      entregables: [],
+      esPersonalizado: true,
+      modeloCobro: "retainer",
+      montoMinimo: 0,
+      horasIncluidas: 40,
+      tarifaHora: TARIFA_HORA_DEFAULT,
+    });
+  };
+
+  // Cambia el modelo de cobro de una partida y recalcula su precio.
+  const handleModeloChange = (catalogoId: string, modelo: string) => {
+    const s = store.draft.servicios.find((x) => x.catalogoId === catalogoId);
+    if (!s) return;
+    if (modelo === "retainer") {
+      store.updateServicio(catalogoId, {
+        modeloCobro: "retainer",
+        tipoPago: "mensual",
+        montoMinimo: s.montoMinimo ?? 0,
+        horasIncluidas: s.horasIncluidas ?? 40,
+        tarifaHora: s.tarifaHora ?? TARIFA_HORA_DEFAULT,
+        precio: s.montoMinimo ?? 0,
+      });
+    } else {
+      store.updateServicio(catalogoId, {
+        modeloCobro: "horas",
+        precio: calcularPrecioHoras(s.horas ?? 1, s.tarifaHora ?? TARIFA_HORA_DEFAULT),
+      });
+    }
+  };
+
+  // Retainer: el precio cotizado es el monto minimo mensual. La tarifa/hora y las
+  // horas incluidas son informativas (las horas adicionales se facturan aparte).
+  const handleRetainerMonto = (catalogoId: string, montoMinimo: number) => {
+    store.updateServicio(catalogoId, { montoMinimo, precio: montoMinimo });
+  };
+
+  const customServicios = store.draft.servicios.filter((s) => s.esPersonalizado);
+
+  // Selector de opcion (1 / 2 / ambas) para una partida en modo doble propuesta.
+  const opcionSelect = (catalogoId: string, value?: string) => (
+    <select
+      value={value ?? "ambas"}
+      onChange={(e) => store.updateServicio(catalogoId, { opcion: e.target.value })}
+      className="px-2 py-1 border border-primary/40 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary"
+      title="Opcion a la que pertenece esta partida"
+    >
+      <option value="1">Opcion 1</option>
+      <option value="2">Opcion 2</option>
+      <option value="ambas">Ambas</option>
+    </select>
+  );
+
   const buildRequestBody = () => ({
     ...(mode === "new" && {
       numero: generarNumeroCotizacion(
@@ -217,6 +328,8 @@ export function CotizacionForm({
     esquemaPago: store.draft.esquemaPago,
     incluirBonos: store.draft.incluirBonos,
     incluirFinanciamiento: store.draft.incluirFinanciamiento,
+    esDoble: store.draft.esDoble,
+    opciones: store.draft.esDoble ? store.draft.opciones : undefined,
     observaciones: store.draft.observaciones,
     cliente: {
       nombre: store.draft.clienteNombre,
@@ -274,13 +387,26 @@ export function CotizacionForm({
   const ivaUnico = totalUnico * IVA_RATE;
   const ivaMensual = totalMensual * IVA_RATE;
 
+  // Totales por opcion (doble propuesta). "ambas" suma en las dos.
+  const totalesOpcion = useMemo(
+    () => ({
+      "1": calcularTotalesOpcion(store.draft.servicios, "1"),
+      "2": calcularTotalesOpcion(store.draft.servicios, "2"),
+    }),
+    [store.draft.servicios]
+  );
+
   const fases = [0, 1, 2, 3];
-  const serviciosPorFase = fases.reduce(
-    (acc, fase) => {
-      acc[fase] = servicios.filter((s) => s.fase === fase);
-      return acc;
-    },
-    {} as Record<number, ServicioCatalogo[]>
+  const serviciosPorFase = useMemo(
+    () =>
+      [0, 1, 2, 3].reduce(
+        (acc, fase) => {
+          acc[fase] = servicios.filter((s) => s.fase === fase);
+          return acc;
+        },
+        {} as Record<number, ServicioCatalogo[]>
+      ),
+    [servicios]
   );
 
   const title =
@@ -305,6 +431,7 @@ export function CotizacionForm({
             )}
           </div>
           <div className="flex items-center gap-2">
+            <PreviewPDFButtonDraft draft={store.draft} />
             <ExportPDFButtonDraft draft={store.draft} />
             <ExportExcelButtonDraft draft={store.draft} />
             <button
@@ -449,6 +576,72 @@ export function CotizacionForm({
               </select>
             </div>
           </div>
+        </div>
+
+        <div className="bg-card-bg rounded-xl border border-border p-5 mb-6">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={esDoble}
+              onChange={(e) => store.setField("esDoble", e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <span className="font-semibold text-lg">Doble propuesta</span>
+            <span className="text-xs text-muted ml-2">
+              Presenta dos opciones comparables; el cliente elige una.
+            </span>
+          </label>
+
+          {esDoble && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              {(["1", "2"] as const).map((op) => (
+                <div
+                  key={op}
+                  className="border border-primary/30 rounded-lg p-4 bg-primary-light/10"
+                >
+                  <h3 className="font-semibold text-sm mb-2 text-primary">
+                    Opcion {op}
+                  </h3>
+                  <label className="block text-xs font-medium text-muted mb-1">
+                    Titulo
+                  </label>
+                  <input
+                    type="text"
+                    value={store.draft.opciones[op]?.titulo ?? ""}
+                    onChange={(e) =>
+                      store.updateOpcionMeta(op, { titulo: e.target.value })
+                    }
+                    placeholder={op === "1" ? "Ej. Capacitacion y revision" : "Ej. Arquitectura completa"}
+                    className={INPUT_CLS}
+                  />
+                  <label className="block text-xs font-medium text-muted mb-1 mt-3">
+                    Descripcion / scope
+                  </label>
+                  <textarea
+                    value={store.draft.opciones[op]?.descripcion ?? ""}
+                    onChange={(e) =>
+                      store.updateOpcionMeta(op, { descripcion: e.target.value })
+                    }
+                    rows={3}
+                    placeholder="Que incluye esta opcion..."
+                    className={INPUT_CLS}
+                  />
+                  <label className="block text-xs font-medium text-muted mb-1 mt-3">
+                    Lo que NO incluye
+                  </label>
+                  <textarea
+                    value={store.draft.opciones[op]?.noIncluye ?? ""}
+                    onChange={(e) =>
+                      store.updateOpcionMeta(op, { noIncluye: e.target.value })
+                    }
+                    rows={2}
+                    placeholder="Exclusiones de esta opcion..."
+                    className={INPUT_CLS}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {mode === "new" && paquetes && paquetes.length > 0 && (
@@ -604,6 +797,8 @@ export function CotizacionForm({
                             </div>
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
+                            {isSelected && esDoble &&
+                              opcionSelect(serv.id, servicioData?.opcion)}
                             {isSelected && (
                               <div className="flex items-center gap-1">
                                 <DollarSign className="w-3.5 h-3.5 text-muted" />
@@ -668,6 +863,266 @@ export function CotizacionForm({
             </div>
           );
         })}
+
+        <div className="bg-card-bg rounded-xl border border-border p-5 mb-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold flex items-center gap-2">
+              <Clock className="w-4 h-4 text-primary" />
+              Servicios por tiempo (horas / retainer)
+            </h3>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleAddCustom}
+                className="flex items-center gap-1 px-3 py-1.5 border border-primary text-primary rounded-lg text-sm font-medium hover:bg-primary-light/30"
+              >
+                <Plus className="w-4 h-4" />
+                Por horas
+              </button>
+              <button
+                onClick={handleAddRetainer}
+                className="flex items-center gap-1 px-3 py-1.5 border border-primary text-primary rounded-lg text-sm font-medium hover:bg-primary-light/30"
+              >
+                <Plus className="w-4 h-4" />
+                Retainer
+              </button>
+            </div>
+          </div>
+          {customServicios.length === 0 ? (
+            <p className="text-xs text-muted">
+              Agrega partidas cobradas por tiempo: <b>por horas</b> (horas x tarifa) o{" "}
+              <b>retainer</b> (importe minimo mensual + horas adicionales que se facturan
+              aparte). Aparecen en el resumen y en la cotizacion junto al resto de servicios.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {customServicios.map((s) => (
+                <div
+                  key={s.catalogoId}
+                  className="border border-primary/40 bg-primary-light/10 rounded-lg p-3"
+                >
+                  <div className="grid grid-cols-2 md:grid-cols-12 gap-2">
+                    <div className="col-span-2 md:col-span-4">
+                      <label className="block text-xs font-medium text-muted mb-1">
+                        Concepto
+                      </label>
+                      <input
+                        type="text"
+                        value={s.nombre}
+                        onChange={(e) =>
+                          store.updateServicio(s.catalogoId, {
+                            nombre: e.target.value,
+                          })
+                        }
+                        placeholder={
+                          s.modeloCobro === "retainer"
+                            ? "Ej. Acompanamiento mensual"
+                            : "Ej. Horas de consultoria"
+                        }
+                        className="w-full px-2 py-1.5 border border-border rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                    </div>
+                    <div className="md:col-span-3">
+                      <label className="block text-xs font-medium text-muted mb-1">
+                        Modelo
+                      </label>
+                      <select
+                        value={s.modeloCobro === "retainer" ? "retainer" : "horas"}
+                        onChange={(e) =>
+                          handleModeloChange(s.catalogoId, e.target.value)
+                        }
+                        className="w-full px-2 py-1.5 border border-border rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-white"
+                      >
+                        <option value="horas">Por horas</option>
+                        <option value="retainer">Retainer</option>
+                      </select>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-medium text-muted mb-1">
+                        Fase
+                      </label>
+                      <select
+                        value={s.fase}
+                        onChange={(e) =>
+                          store.updateServicio(s.catalogoId, {
+                            fase: parseInt(e.target.value, 10),
+                          })
+                        }
+                        className="w-full px-2 py-1.5 border border-border rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-white"
+                      >
+                        {[0, 1, 2, 3].map((f) => (
+                          <option key={f} value={f}>
+                            Fase {f}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-medium text-muted mb-1">
+                        Tipo
+                      </label>
+                      {s.modeloCobro === "retainer" ? (
+                        <div className="w-full px-2 py-1.5 border border-border rounded text-sm bg-gray-50 text-muted">
+                          Mensual
+                        </div>
+                      ) : (
+                        <select
+                          value={s.tipoPago}
+                          onChange={(e) =>
+                            store.updateServicio(s.catalogoId, {
+                              tipoPago: e.target.value,
+                            })
+                          }
+                          className="w-full px-2 py-1.5 border border-border rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-white"
+                        >
+                          <option value="unico">Pago Unico</option>
+                          <option value="mensual">Mensual</option>
+                        </select>
+                      )}
+                    </div>
+                    <div className="md:col-span-1 flex items-end justify-end">
+                      <button
+                        onClick={() => store.removeServicio(s.catalogoId)}
+                        className="p-1.5 text-muted hover:text-red-600 hover:bg-red-50 rounded"
+                        title="Eliminar partida"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  {s.modeloCobro === "retainer" ? (
+                    <div className="grid grid-cols-2 md:grid-cols-12 gap-2 mt-2">
+                      <div className="md:col-span-4">
+                        <label className="block text-xs font-medium text-muted mb-1">
+                          Monto minimo mensual
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={s.montoMinimo ?? 0}
+                          onChange={(e) =>
+                            handleRetainerMonto(
+                              s.catalogoId,
+                              parseFloat(e.target.value) || 0
+                            )
+                          }
+                          className="w-full px-2 py-1.5 border border-border rounded text-sm text-right focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
+                      <div className="md:col-span-4">
+                        <label className="block text-xs font-medium text-muted mb-1">
+                          Horas incluidas
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={s.horasIncluidas ?? 0}
+                          onChange={(e) =>
+                            store.updateServicio(s.catalogoId, {
+                              horasIncluidas: parseFloat(e.target.value) || 0,
+                            })
+                          }
+                          className="w-full px-2 py-1.5 border border-border rounded text-sm text-right focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
+                      <div className="md:col-span-4">
+                        <label className="block text-xs font-medium text-muted mb-1">
+                          Tarifa hora adicional
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={s.tarifaHora ?? 0}
+                          onChange={(e) =>
+                            store.updateServicio(s.catalogoId, {
+                              tarifaHora: parseFloat(e.target.value) || 0,
+                            })
+                          }
+                          className="w-full px-2 py-1.5 border border-border rounded text-sm text-right focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-12 gap-2 mt-2">
+                      <div className="md:col-span-3">
+                        <label className="block text-xs font-medium text-muted mb-1">
+                          Horas
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={s.horas ?? 0}
+                          onChange={(e) =>
+                            handleCustomHoras(
+                              s.catalogoId,
+                              parseFloat(e.target.value) || 0
+                            )
+                          }
+                          className="w-full px-2 py-1.5 border border-border rounded text-sm text-right focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
+                      <div className="md:col-span-3">
+                        <label className="block text-xs font-medium text-muted mb-1">
+                          Tarifa/hora
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={s.tarifaHora ?? 0}
+                          onChange={(e) =>
+                            handleCustomTarifa(
+                              s.catalogoId,
+                              parseFloat(e.target.value) || 0
+                            )
+                          }
+                          className="w-full px-2 py-1.5 border border-border rounded text-sm text-right focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between mt-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted">Entrega:</span>
+                      <input
+                        type="text"
+                        value={s.tiempoEntrega}
+                        onChange={(e) =>
+                          store.updateServicio(s.catalogoId, {
+                            tiempoEntrega: e.target.value,
+                          })
+                        }
+                        className="w-40 px-2 py-1 border border-border rounded text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                      {esDoble && (
+                        <>
+                          <span className="text-xs text-muted ml-2">Opcion:</span>
+                          {opcionSelect(s.catalogoId, s.opcion)}
+                        </>
+                      )}
+                    </div>
+                    <span className="font-semibold">
+                      {s.modeloCobro === "retainer" ? (
+                        <span className="text-primary">
+                          {describirRetainer(
+                            s.montoMinimo ?? 0,
+                            s.horasIncluidas ?? 0,
+                            s.tarifaHora ?? 0
+                          )}
+                        </span>
+                      ) : (
+                        <>
+                          {(s.horas ?? 0)} h x {formatCurrency(s.tarifaHora ?? 0)} ={" "}
+                          <span className="text-primary">
+                            {formatCurrency(s.precio)}
+                          </span>
+                        </>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="bg-card-bg rounded-xl border border-border p-5 mb-4">
           <h3 className="font-semibold mb-3">
@@ -782,6 +1237,43 @@ export function CotizacionForm({
             <div className="px-5 py-4 border-b border-border bg-gray-50">
               <h3 className="font-semibold">Resumen</h3>
             </div>
+            {esDoble && (
+              <div className="p-5 space-y-4 border-b border-border">
+                {(["1", "2"] as const).map((op) => {
+                  const t = totalesOpcion[op];
+                  const meta = store.draft.opciones[op];
+                  return (
+                    <div key={op} className="border border-primary/30 rounded-lg p-3 bg-primary-light/10">
+                      <h4 className="text-sm font-semibold text-primary">
+                        Opcion {op}
+                        {meta?.titulo ? `: ${meta.titulo}` : ""}
+                      </h4>
+                      <div className="flex justify-between text-xs mt-2">
+                        <span>Total unico (c/IVA)</span>
+                        <span className="font-medium">
+                          {formatCurrency(t.totalUnico * (1 + IVA_RATE))}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-xs mt-1">
+                        <span>Total mensual (c/IVA)</span>
+                        <span className="font-medium">
+                          {formatCurrency(t.totalMensual * (1 + IVA_RATE))}
+                        </span>
+                      </div>
+                      {t.horas > 0 && (
+                        <div className="flex justify-between text-xs mt-1 text-muted">
+                          <span>Horas estimadas</span>
+                          <span>{t.horas} h</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                <p className="text-[11px] text-muted">
+                  Las partidas marcadas <b>Ambas</b> suman en las dos opciones.
+                </p>
+              </div>
+            )}
             <div className="p-5 space-y-4">
               <div>
                 <h4 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">

@@ -17,7 +17,16 @@ export default async function DashboardPage() {
     prisma.cotizacion.findMany({
       take: 10,
       orderBy: { createdAt: "desc" },
-      include: { cliente: true, asesor: true, servicios: true },
+      select: {
+        id: true,
+        numero: true,
+        fecha: true,
+        estado: true,
+        cliente: { select: { nombre: true, empresa: true } },
+        servicios: {
+          select: { tipoPago: true, seleccionado: true, precio: true },
+        },
+      },
     }),
     prisma.cliente.count(),
     prisma.servicioCatalogo.count({ where: { activo: true } }),

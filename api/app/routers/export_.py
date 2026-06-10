@@ -69,9 +69,20 @@ def _build_pdf_data_from_draft(draft: ExportDraft, branding: dict[str, str]) -> 
                 "precio": s.precio,
                 "tiempoEntrega": s.tiempoEntrega,
                 "entregables": s.entregables,
+                "esPersonalizado": s.esPersonalizado,
+                "horas": s.horas,
+                "tarifaHora": s.tarifaHora,
+                "modeloCobro": s.modeloCobro,
+                "montoMinimo": s.montoMinimo,
+                "horasIncluidas": s.horasIncluidas,
+                "opcion": s.opcion,
             }
             for s in draft.servicios
         ],
+        "esDoble": draft.esDoble,
+        "opcionesMetadata": (
+            {k: v.model_dump() for k, v in draft.opciones.items()} if draft.esDoble and draft.opciones else None
+        ),
         "planBucefaloNivel": draft.planBucefaloNivel,
         "planBucefaloPrecio": bucefalo_precio(draft.planBucefaloNivel) if draft.planBucefaloNivel else 0,
         "incluirBonos": draft.incluirBonos,
@@ -81,6 +92,7 @@ def _build_pdf_data_from_draft(draft: ExportDraft, branding: dict[str, str]) -> 
         "logoMime": logo_mime,
         "configBancaria": branding,
         "razonSocial": branding.get("razon_social", "Cotizador E3"),
+        "domicilioFiscal": branding.get("domicilio_fiscal"),
     }
 
 
@@ -99,11 +111,13 @@ async def _build_pdf_data_from_db(db: Connection, cotizacion_id: str) -> dict[st
 
     servicios = await db.fetch(
         """SELECT sc.fase, sc."tipoPago", sc.precio, sc."tiempoEntrega", sc.entregables,
-                  s.nombre
+                  sc."esPersonalizado", sc.horas, sc."tarifaHora", sc."modeloCobro",
+                  sc."montoMinimo", sc."horasIncluidas", sc.opcion,
+                  COALESCE(s.nombre, sc.nombre) AS nombre
            FROM "ServicioCotizado" sc
-           JOIN "ServicioCatalogo" s ON s.id = sc."servicioCatalogoId"
+           LEFT JOIN "ServicioCatalogo" s ON s.id = sc."servicioCatalogoId"
            WHERE sc."cotizacionId" = $1 AND sc.seleccionado = true
-           ORDER BY sc.fase, sc.id""",
+           ORDER BY sc.fase, sc.opcion, sc.id""",
         cotizacion_id,
     )
 
@@ -133,13 +147,27 @@ async def _build_pdf_data_from_db(db: Connection, cotizacion_id: str) -> dict[st
             except (json.JSONDecodeError, TypeError):
                 ent = []
         servicios_list.append({
-            "nombre": s["nombre"],
+            "nombre": s["nombre"] or "Servicio",
             "fase": s["fase"],
             "tipoPago": s["tipoPago"],
             "precio": float(s["precio"]),
             "tiempoEntrega": s["tiempoEntrega"],
             "entregables": ent or [],
+            "esPersonalizado": s["esPersonalizado"],
+            "horas": float(s["horas"]) if s["horas"] is not None else None,
+            "tarifaHora": float(s["tarifaHora"]) if s["tarifaHora"] is not None else None,
+            "modeloCobro": s["modeloCobro"],
+            "montoMinimo": float(s["montoMinimo"]) if s["montoMinimo"] is not None else None,
+            "horasIncluidas": float(s["horasIncluidas"]) if s["horasIncluidas"] is not None else None,
+            "opcion": s["opcion"],
         })
+
+    opciones_meta = cot["opcionesMetadata"]
+    if isinstance(opciones_meta, str):
+        try:
+            opciones_meta = json.loads(opciones_meta)
+        except (json.JSONDecodeError, TypeError):
+            opciones_meta = None
 
     plan_nivel = plan["nivel"] if plan else None
 
@@ -155,6 +183,8 @@ async def _build_pdf_data_from_db(db: Connection, cotizacion_id: str) -> dict[st
         "proyecto": cot["proyecto"],
         "esquemaPago": cot["esquemaPago"],
         "servicios": servicios_list,
+        "esDoble": cot["esDoble"],
+        "opcionesMetadata": opciones_meta,
         "planBucefaloNivel": plan_nivel,
         "planBucefaloPrecio": float(plan["precio"]) if plan else 0,
         "incluirBonos": cot["incluirBonos"],
@@ -164,6 +194,7 @@ async def _build_pdf_data_from_db(db: Connection, cotizacion_id: str) -> dict[st
         "logoMime": logo_mime,
         "configBancaria": branding,
         "razonSocial": branding.get("razon_social", "Cotizador E3"),
+        "domicilioFiscal": branding.get("domicilio_fiscal"),
     }
 
 

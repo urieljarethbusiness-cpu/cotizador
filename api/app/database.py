@@ -15,8 +15,8 @@ async def init_db() -> None:
         user=settings.DB_USER,
         password=settings.DB_PASSWORD,
         database=settings.DB_NAME,
-        min_size=2,
-        max_size=10,
+        min_size=5,
+        max_size=20,
     )
 
 

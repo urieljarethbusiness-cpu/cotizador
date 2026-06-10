@@ -45,7 +45,10 @@ TOOLS = [
             "Incluye servicios del catálogo con precios personalizables, plan CRM Bucefalo opcional, "
             "y configuración de moneda y esquema de pago. "
             "La cotización se crea en estado 'borrador'. "
-            "Precios CRM Bucefalo: basico=$1,000/mes, estandar=$3,500/mes, premium=$4,500/mes, empresarial=$7,500/mes."
+            "Precios CRM Bucefalo: basico=$1,000/mes, estandar=$3,500/mes, premium=$4,500/mes, empresarial=$7,500/mes. "
+            "Soporta DOBLE PROPUESTA: con es_doble=true se presentan dos opciones comparables; cada servicio "
+            "se asigna a la opción '1', '2' o 'ambas' (compartido), y opciones_metadata define el título, "
+            "descripción y exclusiones de cada opción."
         ),
         "inputSchema": {
             "type": "object",
@@ -67,10 +70,23 @@ TOOLS = [
                         "properties": {
                             "servicio_id": {"type": "string", "description": "ID del servicio del catálogo (obtener con buscar_servicios)"},
                             "precio_personalizado": {"type": "number", "description": "Precio personalizado (opcional, usa precio base si no se especifica)"},
+                            "opcion": {"type": "string", "enum": ["1", "2", "ambas"], "description": "Solo en doble propuesta: opción a la que pertenece el servicio ('ambas' = compartido). Default 'ambas'."},
                         },
                         "required": ["servicio_id"],
                     },
                     "description": "Lista de servicios a incluir en la cotización",
+                },
+                "es_doble": {
+                    "type": "boolean",
+                    "description": "Si es true, la cotización presenta dos opciones comparables (doble propuesta).",
+                },
+                "opciones_metadata": {
+                    "type": "object",
+                    "description": "Solo en doble propuesta. Metadatos por opción, p.ej. {\"1\": {\"titulo\": \"...\", \"descripcion\": \"...\", \"noIncluye\": \"...\"}, \"2\": {...}}.",
+                    "properties": {
+                        "1": {"type": "object", "properties": {"titulo": {"type": "string"}, "descripcion": {"type": "string"}, "noIncluye": {"type": "string"}}},
+                        "2": {"type": "object", "properties": {"titulo": {"type": "string"}, "descripcion": {"type": "string"}, "noIncluye": {"type": "string"}}},
+                    },
                 },
                 "plan_bucefalo": {
                     "type": "string",

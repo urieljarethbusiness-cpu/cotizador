@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Pencil, Search } from "lucide-react";
 import { formatDate, formatCurrency } from "@/lib/calculators";
@@ -24,17 +24,18 @@ export function CotizacionesList({
 }) {
   const [search, setSearch] = useState("");
 
-  const filtered = cotizaciones.filter((cot) => {
-    if (!search) return true;
+  const filtered = useMemo(() => {
+    if (!search) return cotizaciones;
     const q = search.toLowerCase();
-    return (
-      cot.numero.toLowerCase().includes(q) ||
-      cot.cliente.nombre.toLowerCase().includes(q) ||
-      (cot.cliente.empresa || "").toLowerCase().includes(q) ||
-      cot.asesor.name.toLowerCase().includes(q) ||
-      cot.estado.toLowerCase().includes(q)
+    return cotizaciones.filter(
+      (cot) =>
+        cot.numero.toLowerCase().includes(q) ||
+        cot.cliente.nombre.toLowerCase().includes(q) ||
+        (cot.cliente.empresa || "").toLowerCase().includes(q) ||
+        cot.asesor.name.toLowerCase().includes(q) ||
+        cot.estado.toLowerCase().includes(q)
     );
-  });
+  }, [cotizaciones, search]);
 
   return (
     <>

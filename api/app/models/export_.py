@@ -10,6 +10,20 @@ class ServicioDraft(BaseModel):
     precio: float
     tiempoEntrega: str
     entregables: list[str] = Field(default_factory=list)
+    esPersonalizado: bool = False
+    horas: float | None = None
+    tarifaHora: float | None = None
+    modeloCobro: str | None = None
+    montoMinimo: float | None = None
+    horasIncluidas: float | None = None
+    # Doble propuesta: "1" | "2" | "ambas".
+    opcion: str | None = None
+
+
+class MetaOpcionDraft(BaseModel):
+    titulo: str | None = None
+    descripcion: str | None = None
+    noIncluye: str | None = None
 
 
 class ExportDraft(BaseModel):
@@ -25,6 +39,8 @@ class ExportDraft(BaseModel):
     servicios: list[ServicioDraft] = Field(default_factory=list)
     planBucefaloNivel: str | None = None
     observaciones: str = ""
+    esDoble: bool = False
+    opciones: dict[str, MetaOpcionDraft] | None = None
 
 
 class FinanciamientoRequest(BaseModel):

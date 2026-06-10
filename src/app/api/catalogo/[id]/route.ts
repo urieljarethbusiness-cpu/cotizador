@@ -19,6 +19,7 @@ export async function PUT(
         tiempoEntrega: body.tiempoEntrega,
         entregablesDefault: body.entregablesDefault || [],
         variante: body.variante || null,
+        nivel: body.nivel || null,
         activo: body.activo !== false,
         orden: body.orden,
         categoriaId: body.categoriaId || null,

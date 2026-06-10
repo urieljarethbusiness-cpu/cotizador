@@ -13,7 +13,7 @@ from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 
-from app.services.calculators import FASES_SHORT, PLANES_BUCEFALO, bucefalo_precio
+from app.services.calculators import FASES_SHORT, PLANES_BUCEFALO, bucefalo_precio, detalle_modelo, calcular_totales_opcion
 
 PRIMARY_DEFAULT = "#2563eb"
 DARK_DEFAULT = "#1e293b"
@@ -38,6 +38,23 @@ def _hex_to_rgb(hex_color: str) -> colors.Color:
 
 def _fmt_currency(n: float) -> str:
     return f"${n:,.2f}"
+
+
+def _wrap_text(c, text: str, font: str, size: float, max_width: float) -> list[str]:
+    """Envuelve texto en lineas que caben en max_width (respeta saltos de linea)."""
+    lines: list[str] = []
+    for paragraph in str(text or "").split("\n"):
+        words = paragraph.split()
+        line = ""
+        for word in words:
+            test = f"{line} {word}".strip()
+            if c.stringWidth(test, font, size) > max_width and line:
+                lines.append(line)
+                line = word
+            else:
+                line = test
+        lines.append(line)
+    return lines
 
 
 def _fmt_date(d: datetime) -> str:
@@ -187,21 +204,23 @@ def generate_cotizacion_pdf(data: dict[str, Any]) -> bytes:
     col_tiempo = MARGIN_LEFT + CONTENT_W - 120
     col_precio = MARGIN_LEFT + CONTENT_W - 60
 
-    # Header row
-    c.setFillColor(light_rgb)
-    c.rect(MARGIN_LEFT, y - 2, CONTENT_W, 16, fill=1, stroke=0)
-    c.setFont("Helvetica-Bold", 7)
-    c.setFillColor(dark_rgb)
-    c.drawString(col_nombre + 6, y + 3, "Servicio")
-    c.drawString(col_tipo + 4, y + 3, "Tipo")
-    c.drawString(col_tiempo + 4, y + 3, "Entrega")
-    c.drawRightString(col_precio + 60, y + 3, "Precio")
-    y -= 4
+    es_doble = bool(data.get("esDoble"))
+    opciones_meta = data.get("opcionesMetadata") or {}
 
-    c.setStrokeColor(border_rgb)
-    c.setLineWidth(0.3)
-    c.line(MARGIN_LEFT, y, MARGIN_LEFT + CONTENT_W, y)
-    y -= 14
+    def _draw_table_header(y_pos):
+        c.setFillColor(light_rgb)
+        c.rect(MARGIN_LEFT, y_pos - 2, CONTENT_W, 16, fill=1, stroke=0)
+        c.setFont("Helvetica-Bold", 7)
+        c.setFillColor(dark_rgb)
+        c.drawString(col_nombre + 6, y_pos + 3, "Servicio")
+        c.drawString(col_tipo + 4, y_pos + 3, "Tipo")
+        c.drawString(col_tiempo + 4, y_pos + 3, "Entrega")
+        c.drawRightString(col_precio + 60, y_pos + 3, "Precio")
+        y_pos -= 4
+        c.setStrokeColor(border_rgb)
+        c.setLineWidth(0.3)
+        c.line(MARGIN_LEFT, y_pos, MARGIN_LEFT + CONTENT_W, y_pos)
+        return y_pos - 14
 
     unicos = [s for s in servicios if s.get("tipoPago") == "unico"]
     mensuales = [s for s in servicios if s.get("tipoPago") == "mensual"]
@@ -239,6 +258,13 @@ def generate_cotizacion_pdf(data: dict[str, Any]) -> bytes:
             c.drawRightString(col_precio + 60, y_pos - 10, _fmt_currency(serv.get("precio", 0)))
             y_pos -= 14
 
+            detalle = detalle_modelo(serv)
+            if detalle:
+                c.setFont("Helvetica-Oblique", 6.5)
+                c.setFillColor(muted_rgb)
+                c.drawString(col_nombre + 10, y_pos - 7, detalle[:90])
+                y_pos -= 9
+
             entregables = serv.get("entregables", [])
             if entregables:
                 half = (len(entregables) + 1) // 2
@@ -272,10 +298,99 @@ def generate_cotizacion_pdf(data: dict[str, Any]) -> bytes:
         y_pos -= 14
         return y_pos
 
-    if unicos:
-        y = _draw_section(unicos, "Unico", "Total Pago Unico", y)
-    if mensuales:
-        y = _draw_section(mensuales, "Mensual", "Total Pago Mensual", y)
+    def _draw_opcion_header(op, y_pos):
+        meta = opciones_meta.get(op) or {}
+        max_y = PAGE_H - MARGIN_BOTTOM - 5
+        if y_pos - 30 < max_y:
+            c.showPage()
+            y_pos = PAGE_H - MARGIN_TOP
+        titulo = meta.get("titulo")
+        c.setFillColor(primary_rgb)
+        c.rect(MARGIN_LEFT, y_pos - 18, CONTENT_W, 18, fill=1, stroke=0)
+        c.setFont("Helvetica-Bold", 10)
+        c.setFillColor(white_rgb)
+        c.drawString(MARGIN_LEFT + 8, y_pos - 13, f"OPCION {op}" + (f": {titulo}" if titulo else ""))
+        y_pos -= 24
+        desc = meta.get("descripcion")
+        if desc:
+            c.setFont("Helvetica", 7.5)
+            c.setFillColor(dark_rgb)
+            for line in _wrap_text(c, desc, "Helvetica", 7.5, CONTENT_W - 12):
+                c.drawString(MARGIN_LEFT + 6, y_pos - 8, line)
+                y_pos -= 10
+            y_pos -= 2
+        no_incluye = meta.get("noIncluye")
+        if no_incluye:
+            c.setFont("Helvetica-Oblique", 7)
+            c.setFillColor(muted_rgb)
+            for line in _wrap_text(c, f"No incluye: {no_incluye}", "Helvetica-Oblique", 7, CONTENT_W - 12):
+                c.drawString(MARGIN_LEFT + 6, y_pos - 8, line)
+                y_pos -= 10
+            y_pos -= 4
+        return y_pos
+
+    def _draw_comparativa(y_pos):
+        t1 = calcular_totales_opcion(servicios, "1")
+        t2 = calcular_totales_opcion(servicios, "2")
+        max_y = PAGE_H - MARGIN_BOTTOM - 5
+        if y_pos - 90 < max_y:
+            c.showPage()
+            y_pos = PAGE_H - MARGIN_TOP
+        y_pos -= 6
+        c.setFillColor(primary_rgb)
+        c.rect(MARGIN_LEFT, y_pos - 10, 3, 10, fill=1, stroke=0)
+        c.setFont("Helvetica-Bold", 10)
+        c.setFillColor(dark_rgb)
+        c.drawString(MARGIN_LEFT + 10, y_pos - 8, "Comparativa de opciones")
+        y_pos -= 22
+        c_label = MARGIN_LEFT
+        c_op1 = MARGIN_LEFT + CONTENT_W * 0.45
+        c_op2 = MARGIN_LEFT + CONTENT_W * 0.72
+        t1_tit = (opciones_meta.get("1") or {}).get("titulo")
+        t2_tit = (opciones_meta.get("2") or {}).get("titulo")
+        c.setFillColor(light_rgb)
+        c.rect(MARGIN_LEFT, y_pos - 2, CONTENT_W, 16, fill=1, stroke=0)
+        c.setFont("Helvetica-Bold", 7.5)
+        c.setFillColor(dark_rgb)
+        c.drawString(c_label + 6, y_pos + 3, "Concepto")
+        c.drawString(c_op1, y_pos + 3, f"Opcion 1" + (f" - {t1_tit}" if t1_tit else ""))
+        c.drawString(c_op2, y_pos + 3, f"Opcion 2" + (f" - {t2_tit}" if t2_tit else ""))
+        y_pos -= 18
+        filas = [
+            ("Total unico (c/IVA)", _fmt_currency(t1["totalUnico"] * 1.16), _fmt_currency(t2["totalUnico"] * 1.16)),
+            ("Total mensual (c/IVA)", _fmt_currency(t1["totalMensual"] * 1.16), _fmt_currency(t2["totalMensual"] * 1.16)),
+            ("Horas estimadas", f"{t1['horas']:g} h", f"{t2['horas']:g} h"),
+        ]
+        for lab, v1, v2 in filas:
+            c.setFont("Helvetica", 8)
+            c.setFillColor(dark_rgb)
+            c.drawString(c_label + 6, y_pos - 8, lab)
+            c.setFont("Helvetica-Bold", 8)
+            c.drawString(c_op1, y_pos - 8, v1)
+            c.drawString(c_op2, y_pos - 8, v2)
+            c.setStrokeColor(_hex_to_rgb("#e5e7eb"))
+            c.setLineWidth(0.2)
+            c.line(c_label + 6, y_pos - 12, MARGIN_LEFT + CONTENT_W, y_pos - 12)
+            y_pos -= 14
+        return y_pos - 8
+
+    if es_doble:
+        for op in ("1", "2"):
+            y = _draw_opcion_header(op, y)
+            y = _draw_table_header(y)
+            u = [s for s in unicos if s.get("opcion") in (op, "ambas")]
+            me = [s for s in mensuales if s.get("opcion") in (op, "ambas")]
+            if u:
+                y = _draw_section(u, "Unico", f"Total Pago Unico - Opcion {op}", y)
+            if me:
+                y = _draw_section(me, "Mensual", f"Total Pago Mensual - Opcion {op}", y)
+        y = _draw_comparativa(y)
+    else:
+        y = _draw_table_header(y)
+        if unicos:
+            y = _draw_section(unicos, "Unico", "Total Pago Unico", y)
+        if mensuales:
+            y = _draw_section(mensuales, "Mensual", "Total Pago Mensual", y)
 
     if plan_nivel:
         label = plan_nivel.capitalize()

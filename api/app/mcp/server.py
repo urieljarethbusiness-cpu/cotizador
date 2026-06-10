@@ -168,6 +168,8 @@ async def _crear_cotizacion(conn, args: dict) -> dict:
     moneda = args.get("moneda", "MXN")
     proyecto = args.get("proyecto", "MKT Digital")
     esquema = args.get("esquema_pago", "Pago Unico/Mensual")
+    es_doble = bool(args.get("es_doble", False))
+    opciones_metadata = args.get("opciones_metadata") if es_doble else None
 
     cliente = await conn.fetchrow(
         'SELECT id FROM "Cliente" WHERE nombre = $1 AND empresa = $2',
@@ -194,10 +196,13 @@ async def _crear_cotizacion(conn, args: dict) -> dict:
     async with conn.transaction():
         cot = await conn.fetchrow(
             """INSERT INTO "Cotizacion" (id, numero, fecha, vigencia, moneda, "tipoCambio", proyecto, "esquemaPago",
-               estado, "incluirBonos", "incluirFinanciamiento", observaciones, "clienteId", "asesorId", "createdAt", "updatedAt")
-               VALUES (gen_random_uuid(), $1, $2, $3, $4, 'NA', $5, $6, 'borrador', false, false, '', $7, $8, NOW(), NOW())
+               estado, "incluirBonos", "incluirFinanciamiento", "esDoble", "opcionesMetadata", observaciones, "clienteId", "asesorId", "createdAt", "updatedAt")
+               VALUES (gen_random_uuid(), $1, $2, $3, $4, 'NA', $5, $6, 'borrador', false, false, $7, $8, '', $9, $10, NOW(), NOW())
                RETURNING id, numero""",
-            numero, now, vigencia, moneda, proyecto, esquema, cliente_id, "agent",
+            numero, now, vigencia, moneda, proyecto, esquema,
+            es_doble,
+            json.dumps(opciones_metadata) if opciones_metadata else None,
+            cliente_id, "agent",
         )
         cot_id = cot["id"]
 
@@ -218,12 +223,14 @@ async def _crear_cotizacion(conn, args: dict) -> dict:
                 except (json.JSONDecodeError, TypeError):
                     entregables = []
 
+            opcion = (srv.get("opcion") or "ambas") if es_doble else None
+
             await conn.fetchrow(
                 """INSERT INTO "ServicioCotizado" (id, "cotizacionId", "servicioCatalogoId", fase, "tipoPago",
-                   precio, "tiempoEntrega", entregables, seleccionado, "createdAt", "updatedAt")
-                   VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, true, NOW(), NOW())""",
+                   precio, "tiempoEntrega", entregables, opcion, seleccionado, "createdAt", "updatedAt")
+                   VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, true, NOW(), NOW())""",
                 cot_id, catalogo_id, cat_row["fase"], cat_row["tipoPago"],
-                precio, cat_row["tiempoEntrega"], json.dumps(entregables or []),
+                precio, cat_row["tiempoEntrega"], json.dumps(entregables or []), opcion,
             )
 
         if plan_bucefalo:
@@ -363,13 +370,13 @@ async def _duplicar_cotizacion(conn, args: dict) -> dict:
     async with conn.transaction():
         new_cot = await conn.fetchrow(
             """INSERT INTO "Cotizacion" (id, numero, fecha, vigencia, moneda, "tipoCambio", proyecto, "esquemaPago",
-               estado, "incluirBonos", "incluirFinanciamiento", observaciones, "clienteId", "asesorId", "createdAt", "updatedAt")
-               VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, 'borrador', $8, $9, $10, $11, $12, NOW(), NOW())
+               estado, "incluirBonos", "incluirFinanciamiento", "esDoble", "opcionesMetadata", observaciones, "clienteId", "asesorId", "createdAt", "updatedAt")
+               VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, 'borrador', $8, $9, $10, $11, $12, $13, $14, NOW(), NOW())
                RETURNING id, numero""",
             new_numero, now, original["vigencia"], original["moneda"], original["tipoCambio"],
             original["proyecto"], original["esquemaPago"], original["incluirBonos"],
-            original["incluirFinanciamiento"], original["observaciones"],
-            original["clienteId"], original["asesorId"],
+            original["incluirFinanciamiento"], original["esDoble"], original["opcionesMetadata"],
+            original["observaciones"], original["clienteId"], original["asesorId"],
         )
         new_id = new_cot["id"]
 
@@ -379,10 +386,10 @@ async def _duplicar_cotizacion(conn, args: dict) -> dict:
         for s in servicios:
             await conn.fetchrow(
                 """INSERT INTO "ServicioCotizado" (id, "cotizacionId", "servicioCatalogoId", fase, "tipoPago",
-                   precio, "tiempoEntrega", entregables, notas, seleccionado, "createdAt", "updatedAt")
-                   VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())""",
+                   precio, "tiempoEntrega", entregables, notas, opcion, seleccionado, "createdAt", "updatedAt")
+                   VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())""",
                 new_id, s["servicioCatalogoId"], s["fase"], s["tipoPago"],
-                s["precio"], s["tiempoEntrega"], s["entregables"], s["notas"], s["seleccionado"],
+                s["precio"], s["tiempoEntrega"], s["entregables"], s["notas"], s["opcion"], s["seleccionado"],
             )
 
         plan = await conn.fetchrow(

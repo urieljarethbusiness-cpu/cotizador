@@ -1,5 +1,5 @@
 import PDFDocument from "pdfkit";
-import { FASES_SHORT as FASES } from "./calculators";
+import { FASES_SHORT as FASES, describirRetainer, formatCurrency, calcularTotalesOpcion, type MetaOpcion } from "./calculators";
 
 interface ServicioPDF {
   nombre: string;
@@ -8,6 +8,24 @@ interface ServicioPDF {
   precio: number;
   tiempoEntrega: string;
   entregables: string[];
+  esPersonalizado?: boolean;
+  horas?: number;
+  tarifaHora?: number;
+  modeloCobro?: string;
+  montoMinimo?: number;
+  horasIncluidas?: number;
+  opcion?: string | null;
+}
+
+// Texto de desglose por modelo de cobro (horas / retainer) para la sub-linea del servicio.
+function detalleModeloPDF(serv: ServicioPDF): string {
+  if (serv.modeloCobro === "retainer") {
+    return describirRetainer(serv.montoMinimo ?? 0, serv.horasIncluidas ?? 0, serv.tarifaHora ?? 0);
+  }
+  if ((serv.modeloCobro === "horas" || serv.esPersonalizado) && serv.horas && serv.tarifaHora) {
+    return `${serv.horas} h x ${formatCurrency(serv.tarifaHora)}/hr`;
+  }
+  return "";
 }
 
 interface CotizacionPDFData {
@@ -22,6 +40,8 @@ interface CotizacionPDFData {
   proyecto: string;
   esquemaPago: string;
   servicios: ServicioPDF[];
+  esDoble?: boolean;
+  opcionesMetadata?: { "1"?: MetaOpcion; "2"?: MetaOpcion } | null;
   planBucefaloNivel: string | null;
   planBucefaloPrecio: number;
   incluirBonos: boolean;
@@ -180,13 +200,15 @@ export async function generateCotizacionPDF(data: CotizacionPDFData): Promise<Bu
     const colTiempo = L + W - 120;
     const colPrecio = L + W - 60;
 
-    rowBg(y, 16, LIGHT_BG);
-    doc.font("Helvetica-Bold").fontSize(7).fillColor(DARK);
-    doc.text("Servicio", colNombre + 6, y + 4);
-    doc.text("Tipo", colTipo + 4, y + 4);
-    doc.text("Entrega", colTiempo + 4, y + 4);
-    doc.text("Precio", colPrecio, y + 4, { width: 60, align: "right" });
-    y += 18;
+    function drawTableHeader() {
+      rowBg(y, 16, LIGHT_BG);
+      doc.font("Helvetica-Bold").fontSize(7).fillColor(DARK);
+      doc.text("Servicio", colNombre + 6, y + 4);
+      doc.text("Tipo", colTipo + 4, y + 4);
+      doc.text("Entrega", colTiempo + 4, y + 4);
+      doc.text("Precio", colPrecio, y + 4, { width: 60, align: "right" });
+      y += 18;
+    }
 
     const unicos = data.servicios.filter((s) => s.tipoPago === "unico");
     const mensuales = data.servicios.filter((s) => s.tipoPago === "mensual");
@@ -205,7 +227,8 @@ export async function generateCotizacionPDF(data: CotizacionPDFData): Promise<Bu
           y += 16;
         }
 
-        const servH = 13 + (serv.entregables ? Math.ceil(serv.entregables.length / 2) * 8 : 0) + 5;
+        const detalleModelo = detalleModeloPDF(serv);
+        const servH = 13 + (detalleModelo ? 9 : 0) + (serv.entregables ? Math.ceil(serv.entregables.length / 2) * 8 : 0) + 5;
         y = need(servH, y);
 
         doc.font("Helvetica").fontSize(8).fillColor(DARK);
@@ -216,6 +239,12 @@ export async function generateCotizacionPDF(data: CotizacionPDFData): Promise<Bu
         doc.font("Helvetica-Bold").fontSize(8).fillColor(DARK);
         doc.text(fmt(serv.precio), colPrecio, y, { width: 60, align: "right" });
         y += 13;
+
+        if (detalleModelo) {
+          doc.font("Helvetica-Oblique").fontSize(6.5).fillColor(MUTED);
+          doc.text(detalleModelo, colNombre + 10, y, { width: colTipo - colNombre - 20 });
+          y += 9;
+        }
 
         if (serv.entregables && serv.entregables.length > 0) {
           const col1X = colNombre + 10;
@@ -251,8 +280,84 @@ export async function generateCotizacionPDF(data: CotizacionPDFData): Promise<Bu
       return y;
     }
 
-    if (unicos.length > 0) y = drawSection(unicos, "Unico", "Total Pago Unico");
-    if (mensuales.length > 0) y = drawSection(mensuales, "Mensual", "Total Pago Mensual");
+    // Encabezado de una opcion (titulo, descripcion, exclusiones) en doble propuesta.
+    function drawOpcionHeader(op: "1" | "2") {
+      const meta = data.opcionesMetadata?.[op] || {};
+      y = need(30, y);
+      y += 4;
+      doc.rect(L, y, W, 18).fill(PRIMARY);
+      doc.font("Helvetica-Bold").fontSize(10).fillColor(WHITE)
+        .text(`OPCION ${op}${meta.titulo ? ": " + meta.titulo : ""}`, L + 8, y + 4, { width: W - 16 });
+      y += 22;
+      if (meta.descripcion) {
+        const h = txtHeight(meta.descripcion, W - 12, 7.5);
+        y = need(h + 4, y);
+        doc.font("Helvetica").fontSize(7.5).fillColor(DARK).text(meta.descripcion, L + 6, y, { width: W - 12 });
+        y += h + 4;
+      }
+      if (meta.noIncluye) {
+        const label = `No incluye: ${meta.noIncluye}`;
+        const h = txtHeight(label, W - 12, 7);
+        y = need(h + 4, y);
+        doc.font("Helvetica-Oblique").fontSize(7).fillColor(MUTED).text(label, L + 6, y, { width: W - 12 });
+        y += h + 6;
+      }
+    }
+
+    // Tabla comparativa final: totales (con IVA) y horas por opcion.
+    function drawComparativa() {
+      const t1 = calcularTotalesOpcion(data.servicios, "1");
+      const t2 = calcularTotalesOpcion(data.servicios, "2");
+      y = need(90, y);
+      y += 6;
+      doc.rect(L, y, 3, 10).fill(PRIMARY);
+      doc.font("Helvetica-Bold").fontSize(10).fillColor(DARK).text("Comparativa de opciones", L + 10, y);
+      y += 18;
+      const cLabel = L;
+      const cOp1 = L + W * 0.45;
+      const cOp2 = L + W * 0.72;
+      const t1Tit = data.opcionesMetadata?.["1"]?.titulo;
+      const t2Tit = data.opcionesMetadata?.["2"]?.titulo;
+      rowBg(y, 16, LIGHT_BG);
+      doc.font("Helvetica-Bold").fontSize(7.5).fillColor(DARK);
+      doc.text("Concepto", cLabel + 6, y + 4);
+      doc.text(`Opcion 1${t1Tit ? " - " + t1Tit : ""}`, cOp1, y + 4, { width: W * 0.27 - 4 });
+      doc.text(`Opcion 2${t2Tit ? " - " + t2Tit : ""}`, cOp2, y + 4, { width: W * 0.28 - 4 });
+      y += 18;
+      const filas: [string, string, string][] = [
+        ["Total unico (c/IVA)", fmt(t1.totalUnico * 1.16), fmt(t2.totalUnico * 1.16)],
+        ["Total mensual (c/IVA)", fmt(t1.totalMensual * 1.16), fmt(t2.totalMensual * 1.16)],
+        ["Horas estimadas", `${t1.horas} h`, `${t2.horas} h`],
+      ];
+      for (const [lab, v1, v2] of filas) {
+        y = need(14, y);
+        doc.font("Helvetica").fontSize(8).fillColor(DARK).text(lab, cLabel + 6, y);
+        doc.font("Helvetica-Bold").fontSize(8).fillColor(DARK).text(v1, cOp1, y, { width: W * 0.27 - 4 });
+        doc.text(v2, cOp2, y, { width: W * 0.28 - 4 });
+        doc.save();
+        doc.moveTo(cLabel + 6, y + 12).lineTo(L + W, y + 12).strokeColor("#e5e7eb").lineWidth(0.2).stroke();
+        doc.restore();
+        y += 14;
+      }
+      y += 8;
+    }
+
+    if (data.esDoble) {
+      for (const op of ["1", "2"] as const) {
+        const inOp = (s: ServicioPDF) => s.opcion === op || s.opcion === "ambas";
+        drawOpcionHeader(op);
+        drawTableHeader();
+        const u = unicos.filter(inOp);
+        const me = mensuales.filter(inOp);
+        if (u.length > 0) y = drawSection(u, "Unico", `Total Pago Unico - Opcion ${op}`);
+        if (me.length > 0) y = drawSection(me, "Mensual", `Total Pago Mensual - Opcion ${op}`);
+      }
+      drawComparativa();
+    } else {
+      drawTableHeader();
+      if (unicos.length > 0) y = drawSection(unicos, "Unico", "Total Pago Unico");
+      if (mensuales.length > 0) y = drawSection(mensuales, "Mensual", "Total Pago Mensual");
+    }
 
     if (data.planBucefaloNivel) {
       y = need(20, y);
@@ -350,7 +455,6 @@ export async function generateCotizacionPDF(data: CotizacionPDFData): Promise<Bu
     const clabeNac = cfg.clabe_interbancaria || cfg.cuenta_nacional || "";
     const cuentaNac = cfg.cuenta_nacional || "";
     const bancoNac = cfg.cuenta_nacional ? "BBVA" : "";
-    const cuentaInt = (cfg.cuenta_internacional_swift || cfg.cuenta_internacional || "").split("\n").filter(Boolean);
     const swiftMatch = cfg.cuenta_internacional_swift?.match(/SWIFT[^:]*:\s*(\S+)/i);
     const clabeIntMatch = cfg.cuenta_internacional_swift?.match(/CLABE[^:]*:\s*(\S+)/i);
     const swift = swiftMatch?.[1] || "BCMRMXMMPYM";

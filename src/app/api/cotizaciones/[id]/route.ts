@@ -74,6 +74,8 @@ export async function PUT(
       esquemaPago,
       incluirBonos,
       incluirFinanciamiento,
+      esDoble,
+      opciones,
       observaciones,
       cliente,
       servicios,
@@ -86,15 +88,15 @@ export async function PUT(
       return NextResponse.json({ error: "No encontrada" }, { status: 404 });
     }
 
+    let clienteIdFinal: string | undefined;
     if (cliente) {
       const existingCliente = await prisma.cliente.findFirst({
         where: { nombre: cliente.nombre, empresa: cliente.empresa || null },
       });
-      let clienteId = existing.clienteId;
       if (existingCliente) {
-        clienteId = existingCliente.id;
+        clienteIdFinal = existingCliente.id;
         await prisma.cliente.update({
-          where: { id: clienteId },
+          where: { id: clienteIdFinal },
           data: {
             email: cliente.email || existingCliente.email,
             telefono: cliente.telefono || existingCliente.telefono,
@@ -109,18 +111,16 @@ export async function PUT(
             telefono: cliente.telefono || null,
           },
         });
-        clienteId = newCliente.id;
+        clienteIdFinal = newCliente.id;
       }
-
-      await prisma.cotizacion.update({
-        where: { id },
-        data: { clienteId },
-      });
     }
+
+    const esDobleFinal = esDoble ?? existing.esDoble;
 
     await prisma.cotizacion.update({
       where: { id },
       data: {
+        ...(clienteIdFinal && { clienteId: clienteIdFinal }),
         ...(fecha && { fecha: new Date(fecha) }),
         ...(vigencia && { vigencia: new Date(vigencia) }),
         ...(moneda && { moneda }),
@@ -129,35 +129,58 @@ export async function PUT(
         ...(esquemaPago && { esquemaPago }),
         ...(incluirBonos !== undefined && { incluirBonos }),
         ...(incluirFinanciamiento !== undefined && { incluirFinanciamiento }),
+        ...(esDoble !== undefined && { esDoble }),
+        ...(esDoble !== undefined && { opcionesMetadata: esDoble ? opciones ?? {} : undefined }),
         ...(observaciones !== undefined && { observaciones }),
         ...(estado && ESTADOS_COTIZACION.includes(estado as typeof ESTADOS_COTIZACION[number]) && { estado }),
       },
     });
 
     if (servicios && Array.isArray(servicios)) {
+      // El servicio Bucéfalo del catálogo se resuelve una sola vez, no por partida.
+      const necesitaBucefalo = servicios.some(
+        (s) => !s.esPersonalizado && s.catalogoId?.startsWith("bucefalo-")
+      );
+      const bucefaloCatalogoId = necesitaBucefalo
+        ? (await prisma.servicioCatalogo.findFirst({
+            where: { categoriaRel: { nombre: "CRM" }, tipoPago: "mensual" },
+            select: { id: true },
+          }))?.id ?? null
+        : null;
+
       await prisma.$transaction(async (tx) => {
         await tx.servicioCotizado.deleteMany({ where: { cotizacionId: id } });
 
-        for (const serv of servicios) {
-          const catalogoId = serv.catalogoId?.startsWith("bucefalo-")
-            ? (await tx.servicioCatalogo.findFirst({
-                where: { categoriaRel: { nombre: "CRM" }, tipoPago: "mensual" },
-              }))?.id || serv.catalogoId
-            : serv.catalogoId;
-
-          await tx.servicioCotizado.create({
-            data: {
+        await tx.servicioCotizado.createMany({
+          data: servicios.map((serv) => {
+            let catalogoId: string | null;
+            if (serv.esPersonalizado) {
+              catalogoId = null;
+            } else if (serv.catalogoId?.startsWith("bucefalo-")) {
+              catalogoId = bucefaloCatalogoId;
+            } else {
+              catalogoId = serv.catalogoId;
+            }
+            return {
               cotizacionId: id,
               servicioCatalogoId: catalogoId,
+              nombre: serv.esPersonalizado ? serv.nombre : null,
+              esPersonalizado: serv.esPersonalizado ?? false,
+              horas: serv.esPersonalizado ? serv.horas ?? null : null,
+              tarifaHora: serv.esPersonalizado ? serv.tarifaHora ?? null : null,
+              modeloCobro: serv.modeloCobro ?? (serv.esPersonalizado ? "horas" : "fijo"),
+              montoMinimo: serv.esPersonalizado ? serv.montoMinimo ?? null : null,
+              horasIncluidas: serv.esPersonalizado ? serv.horasIncluidas ?? null : null,
+              opcion: esDobleFinal ? serv.opcion ?? "ambas" : null,
               fase: serv.fase,
               tipoPago: serv.tipoPago,
               precio: serv.precio,
               tiempoEntrega: serv.tiempoEntrega,
               entregables: serv.entregables,
               seleccionado: true,
-            },
-          });
-        }
+            };
+          }),
+        });
       });
     }
 

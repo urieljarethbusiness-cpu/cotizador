@@ -8,7 +8,17 @@ export const dynamic = "force-dynamic";
 export default async function CotizacionesPage() {
   const cotizaciones = await prisma.cotizacion.findMany({
     orderBy: { createdAt: "desc" },
-    include: { cliente: true, asesor: true, servicios: true },
+    select: {
+      id: true,
+      numero: true,
+      estado: true,
+      fecha: true,
+      cliente: { select: { nombre: true, empresa: true } },
+      asesor: { select: { name: true } },
+      servicios: {
+        select: { tipoPago: true, seleccionado: true, precio: true },
+      },
+    },
   });
 
   return (

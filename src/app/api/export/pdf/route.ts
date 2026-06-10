@@ -24,9 +24,18 @@ export async function POST(request: NextRequest) {
           precio: number;
           tiempoEntrega: string;
           entregables: string[];
+          esPersonalizado?: boolean;
+          horas?: number;
+          tarifaHora?: number;
+          modeloCobro?: string;
+          montoMinimo?: number;
+          horasIncluidas?: number;
+          opcion?: string;
         }[];
         planBucefaloNivel: string | null;
         observaciones: string;
+        esDoble?: boolean;
+        opciones?: { "1"?: { titulo?: string; descripcion?: string; noIncluye?: string }; "2"?: { titulo?: string; descripcion?: string; noIncluye?: string } };
       };
     };
 
@@ -49,6 +58,8 @@ export async function POST(request: NextRequest) {
       proyecto: draft.proyecto,
       esquemaPago: draft.esquemaPago,
       servicios: draft.servicios,
+      esDoble: draft.esDoble,
+      opcionesMetadata: draft.esDoble ? draft.opciones ?? null : null,
       planBucefaloNivel: draft.planBucefaloNivel,
       planBucefaloPrecio: draft.planBucefaloNivel ? bucefaloPrecio(draft.planBucefaloNivel) : 0,
       incluirBonos: draft.incluirBonos,

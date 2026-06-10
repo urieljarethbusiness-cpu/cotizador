@@ -7,13 +7,28 @@ from pydantic import BaseModel, Field
 
 
 class ServicioCotizadoInput(BaseModel):
-    catalogoId: str = Field(..., min_length=1, description="ID del servicio del catálogo")
+    catalogoId: str = Field(..., min_length=1, description="ID del servicio del catálogo o 'custom-...' para partidas personalizadas")
     nombre: str = Field(..., min_length=1, description="Nombre del servicio")
     fase: int = Field(..., ge=0, le=3)
     tipoPago: str = Field(..., pattern="^(unico|mensual)$")
     precio: float = Field(..., ge=0, description="Precio (puede diferir del precioBase)")
     tiempoEntrega: str
     entregables: list[str] = Field(default_factory=list)
+    # Partidas por tiempo (sin catálogo). modeloCobro: "fijo" | "horas" | "retainer".
+    esPersonalizado: bool = False
+    horas: float | None = Field(None, ge=0)
+    tarifaHora: float | None = Field(None, ge=0)
+    modeloCobro: str | None = Field(None, pattern="^(fijo|horas|retainer)$")
+    montoMinimo: float | None = Field(None, ge=0)
+    horasIncluidas: float | None = Field(None, ge=0)
+    # Doble propuesta: "1" | "2" | "ambas". None en cotizaciones normales.
+    opcion: str | None = Field(None, pattern="^(1|2|ambas)$")
+
+
+class MetaOpcionInput(BaseModel):
+    titulo: str | None = None
+    descripcion: str | None = None
+    noIncluye: str | None = None
 
 
 class PlanBucefaloInput(BaseModel):
@@ -38,6 +53,8 @@ class CotizacionCreate(BaseModel):
     esquemaPago: str = Field("Pago Unico/Mensual", pattern="^(Pago Unico|Mensual|Pago Unico/Mensual)$")
     incluirBonos: bool = False
     incluirFinanciamiento: bool = False
+    esDoble: bool = False
+    opciones: dict[str, MetaOpcionInput] | None = None
     observaciones: str = ""
     asesorId: str = Field(..., min_length=1)
     cliente: ClienteInput
@@ -92,6 +109,8 @@ class CotizacionUpdate(BaseModel):
     esquemaPago: str | None = Field(None, pattern="^(Pago Unico|Mensual|Pago Unico/Mensual)$")
     incluirBonos: bool | None = None
     incluirFinanciamiento: bool | None = None
+    esDoble: bool | None = None
+    opciones: dict[str, MetaOpcionInput] | None = None
     observaciones: str | None = None
     estado: str | None = Field(None, pattern="^(borrador|enviada|aprobada|rechazada)$")
     cliente: ClienteInput | None = None
@@ -120,6 +139,8 @@ class CotizacionResponse(BaseModel):
     estado: str
     incluirBonos: bool
     incluirFinanciamiento: bool
+    esDoble: bool = False
+    opcionesMetadata: dict[str, Any] | None = None
     observaciones: str | None
     clienteId: str
     asesorId: str

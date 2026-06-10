@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import type { MetaOpcion } from "./calculators";
 
 export interface ServicioSeleccionado {
   catalogoId: string;
@@ -9,6 +10,18 @@ export interface ServicioSeleccionado {
   tiempoEntrega: string;
   entregables: string[];
   notas?: string;
+  // Doble propuesta: "1" | "2" | "ambas". undefined = cotizacion normal.
+  opcion?: string;
+  // Partidas personalizadas (sin catalogo). modeloCobro define como se calcula el precio:
+  //  - "fijo": precio editable / precioBase (servicios de catalogo)
+  //  - "horas": precio = horas * tarifaHora
+  //  - "retainer": precio = montoMinimo (mensual); tarifaHora y horasIncluidas son informativos
+  esPersonalizado?: boolean;
+  horas?: number;
+  tarifaHora?: number;
+  modeloCobro?: string;
+  montoMinimo?: number;
+  horasIncluidas?: number;
 }
 
 export interface CotizacionDraft {
@@ -29,6 +42,9 @@ export interface CotizacionDraft {
   planBucefaloNivel: string | null;
   servicios: ServicioSeleccionado[];
   observaciones: string;
+  // Doble propuesta: dos opciones comparables dentro de una misma cotizacion.
+  esDoble: boolean;
+  opciones: { "1"?: MetaOpcion; "2"?: MetaOpcion };
 }
 
 interface CotizacionStore {
@@ -41,6 +57,7 @@ interface CotizacionStore {
   updateServicio: (catalogoId: string, updates: Partial<ServicioSeleccionado>) => void;
   removeServicio: (catalogoId: string) => void;
   setServicios: (servicios: ServicioSeleccionado[]) => void;
+  updateOpcionMeta: (opcion: "1" | "2", parcial: Partial<MetaOpcion>) => void;
   resetDraft: () => void;
 }
 
@@ -62,6 +79,8 @@ const initialDraft: CotizacionDraft = {
   planBucefaloNivel: null,
   servicios: [],
   observaciones: "",
+  esDoble: false,
+  opciones: {},
 };
 
 export const useCotizacionStore = create<CotizacionStore>((set) => ({
@@ -115,6 +134,17 @@ export const useCotizacionStore = create<CotizacionStore>((set) => ({
 
   setServicios: (servicios) =>
     set((state) => ({ draft: { ...state.draft, servicios } })),
+
+  updateOpcionMeta: (opcion, parcial) =>
+    set((state) => ({
+      draft: {
+        ...state.draft,
+        opciones: {
+          ...state.draft.opciones,
+          [opcion]: { ...state.draft.opciones[opcion], ...parcial },
+        },
+      },
+    })),
 
   resetDraft: () => set({ draft: { ...initialDraft } }),
 }));

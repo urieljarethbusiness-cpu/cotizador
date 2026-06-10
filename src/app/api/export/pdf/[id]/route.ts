@@ -10,23 +10,23 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const cot = await prisma.cotizacion.findUnique({
-      where: { id },
-      include: {
-        cliente: true,
-        asesor: true,
-        servicios: { include: { servicioCatalogo: true } },
-        planBucefalo: true,
-      },
-    });
+    const [cot, config, branding] = await Promise.all([
+      prisma.cotizacion.findUnique({
+        where: { id },
+        include: {
+          cliente: true,
+          asesor: true,
+          servicios: { include: { servicioCatalogo: true } },
+          planBucefalo: true,
+        },
+      }),
+      getConfigBancaria(),
+      getConfigBranding(),
+    ]);
 
     if (!cot) {
       return NextResponse.json({ error: "No encontrada" }, { status: 404 });
     }
-
-    const config = await getConfigBancaria();
-
-    const branding = await getConfigBranding();
     const empresa = cot.cliente.empresa || cot.cliente.nombre;
     const nombre = `${sanitizeFilename(empresa)} - ${sanitizeFilename(cot.cliente.nombre)} - ${cot.numero}`;
 
@@ -42,13 +42,22 @@ export async function GET(
       proyecto: cot.proyecto,
       esquemaPago: cot.esquemaPago,
       servicios: cot.servicios.filter((s) => s.seleccionado).map((s) => ({
-        nombre: s.servicioCatalogo?.nombre || "Servicio",
+        nombre: s.servicioCatalogo?.nombre || s.nombre || "Servicio",
         fase: s.fase,
         tipoPago: s.tipoPago,
         precio: s.precio,
         tiempoEntrega: s.tiempoEntrega,
         entregables: Array.isArray(s.entregables) ? (s.entregables as string[]) : [],
+        esPersonalizado: s.esPersonalizado,
+        horas: s.horas ?? undefined,
+        tarifaHora: s.tarifaHora ?? undefined,
+        modeloCobro: s.modeloCobro ?? undefined,
+        montoMinimo: s.montoMinimo ?? undefined,
+        horasIncluidas: s.horasIncluidas ?? undefined,
+        opcion: s.opcion ?? undefined,
       })),
+      esDoble: cot.esDoble,
+      opcionesMetadata: cot.opcionesMetadata as never,
       planBucefaloNivel: cot.planBucefalo?.nivel || null,
       planBucefaloPrecio: cot.planBucefalo?.precio || 0,
       incluirBonos: cot.incluirBonos,

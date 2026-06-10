@@ -26,13 +26,83 @@ def _cuid() -> str:
     return uuid.uuid4().hex[:25]
 
 
+async def _insert_servicio_cotizado(conn, cotizacion_id: str, svc, bucefalo_servicio_id, now, es_doble: bool = False) -> None:
+    """Inserta un ServicioCotizado desde un ServicioCotizadoInput, manejando
+    partidas personalizadas (por horas / retainer) en paridad con el backend Next.js."""
+    es_personalizado = bool(getattr(svc, "esPersonalizado", False)) or svc.catalogoId.startswith("custom-")
+
+    if es_personalizado:
+        catalogo_id = None
+    elif svc.catalogoId.startswith("bucefalo-") and bucefalo_servicio_id:
+        catalogo_id = bucefalo_servicio_id
+    else:
+        catalogo_id = svc.catalogoId
+
+    modelo_cobro = svc.modeloCobro or ("horas" if es_personalizado else "fijo")
+    # Doble propuesta: por defecto "ambas"; None en cotizaciones normales.
+    opcion = (svc.opcion or "ambas") if es_doble else None
+
+    await conn.execute(
+        """
+        INSERT INTO "ServicioCotizado"
+            (id, "cotizacionId", "servicioCatalogoId", nombre, "esPersonalizado",
+             horas, "tarifaHora", "modeloCobro", "montoMinimo", "horasIncluidas",
+             opcion, fase, "tipoPago", precio, "tiempoEntrega", entregables, notas,
+             seleccionado, "createdAt", "updatedAt")
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,true,$18,$18)
+        """,
+        _cuid(),
+        cotizacion_id,
+        catalogo_id,
+        svc.nombre if es_personalizado else None,
+        es_personalizado,
+        svc.horas if es_personalizado else None,
+        svc.tarifaHora if es_personalizado else None,
+        modelo_cobro,
+        svc.montoMinimo if es_personalizado else None,
+        svc.horasIncluidas if es_personalizado else None,
+        opcion,
+        svc.fase,
+        svc.tipoPago,
+        svc.precio,
+        svc.tiempoEntrega,
+        json.dumps(svc.entregables),
+        None,
+        now,
+    )
+
+
+def _parse_json(val):
+    """asyncpg devuelve columnas jsonb como str; las parsea a dict/list."""
+    if isinstance(val, str):
+        try:
+            return json.loads(val)
+        except (ValueError, TypeError):
+            return None
+    return val
+
+
 def _build_cotizacion_dict(cot, cliente=None, asesor=None, servicios=None, plan=None) -> dict:
     d = dict(cot)
+    if "opcionesMetadata" in d:
+        d["opcionesMetadata"] = _parse_json(d["opcionesMetadata"])
     d["cliente"] = dict(cliente) if cliente else None
     d["asesor"] = dict(asesor) if asesor else None
     d["servicios"] = [dict(s) for s in servicios] if servicios else []
     d["planBucefalo"] = dict(plan) if plan else None
     return d
+
+
+# LEFT JOIN: los servicios personalizados no tienen servicioCatalogoId y un JOIN
+# interno los dejaría fuera de la respuesta. COALESCE conserva el nombre custom.
+_SERVICIOS_SQL = """
+    SELECT sc.*, sc."servicioCatalogoId" as "catalogoId",
+           COALESCE(s.nombre, sc.nombre) AS nombre, s.descripcion, s."categoriaId"
+    FROM "ServicioCotizado" sc
+    LEFT JOIN "ServicioCatalogo" s ON s.id = sc."servicioCatalogoId"
+    WHERE sc."cotizacionId" = {}
+    ORDER BY sc.fase, sc.opcion, sc.id
+"""
 
 
 async def _fetch_cotizacion_full(conn, cot_id: str) -> dict | None:
@@ -42,20 +112,44 @@ async def _fetch_cotizacion_full(conn, cot_id: str) -> dict | None:
 
     cliente = await conn.fetchrow('SELECT * FROM "Cliente" WHERE id = $1', cot["clienteId"])
     asesor = await conn.fetchrow('SELECT id, email, name, role FROM "User" WHERE id = $1', cot["asesorId"])
-    servicios = await conn.fetch(
-        """
-        SELECT sc.*, sc."servicioCatalogoId" as "catalogoId",
-               s.nombre, s.descripcion, s."categoriaId"
-        FROM "ServicioCotizado" sc
-        JOIN "ServicioCatalogo" s ON s.id = sc."servicioCatalogoId"
-        WHERE sc."cotizacionId" = $1
-        ORDER BY sc.fase, sc.id
-        """,
-        cot_id,
-    )
+    servicios = await conn.fetch(_SERVICIOS_SQL.format("$1"), cot_id)
     plan = await conn.fetchrow('SELECT * FROM "PlanBucefaloCotizacion" WHERE "cotizacionId" = $1', cot_id)
 
     return _build_cotizacion_dict(cot, cliente, asesor, servicios, plan)
+
+
+async def _fetch_cotizaciones_full(conn, cot_rows) -> list[dict]:
+    """Versión batch de _fetch_cotizacion_full: 4 queries en total para toda la
+    página en lugar de 4 por cotización (evita N+1 en el listado)."""
+    if not cot_rows:
+        return []
+
+    cot_ids = [r["id"] for r in cot_rows]
+    cliente_ids = list({r["clienteId"] for r in cot_rows})
+    asesor_ids = list({r["asesorId"] for r in cot_rows})
+
+    clientes = await conn.fetch('SELECT * FROM "Cliente" WHERE id = ANY($1::text[])', cliente_ids)
+    asesores = await conn.fetch('SELECT id, email, name, role FROM "User" WHERE id = ANY($1::text[])', asesor_ids)
+    servicios = await conn.fetch(_SERVICIOS_SQL.format("ANY($1::text[])"), cot_ids)
+    planes = await conn.fetch('SELECT * FROM "PlanBucefaloCotizacion" WHERE "cotizacionId" = ANY($1::text[])', cot_ids)
+
+    clientes_map = {c["id"]: c for c in clientes}
+    asesores_map = {a["id"]: a for a in asesores}
+    planes_map = {p["cotizacionId"]: p for p in planes}
+    servicios_map: dict[str, list] = {}
+    for s in servicios:
+        servicios_map.setdefault(s["cotizacionId"], []).append(s)
+
+    return [
+        _build_cotizacion_dict(
+            cot,
+            clientes_map.get(cot["clienteId"]),
+            asesores_map.get(cot["asesorId"]),
+            servicios_map.get(cot["id"], []),
+            planes_map.get(cot["id"]),
+        )
+        for cot in cot_rows
+    ]
 
 
 async def _resolve_bucefalo_servicio(conn) -> str | None:
@@ -168,11 +262,7 @@ async def list_cotizaciones(
         pagination.offset,
     )
 
-    cotizaciones = []
-    for r in rows:
-        full = await _fetch_cotizacion_full(pool, r["id"])
-        if full:
-            cotizaciones.append(full)
+    cotizaciones = await _fetch_cotizaciones_full(pool, rows)
 
     pages = (total + pagination.limit - 1) // pagination.limit if total > 0 else 0
 
@@ -200,13 +290,16 @@ async def create_cotizacion(body: CotizacionCreate, _auth: dict = Depends(requir
 
             cot_id = _cuid()
             now = datetime.now(timezone.utc)
+            opciones_json = None
+            if body.esDoble and body.opciones:
+                opciones_json = json.dumps({k: v.model_dump() for k, v in body.opciones.items()})
             await conn.execute(
                 """
                 INSERT INTO "Cotizacion"
                     (id, numero, fecha, vigencia, moneda, "tipoCambio", proyecto, "esquemaPago",
-                     estado, "incluirBonos", "incluirFinanciamiento", observaciones,
-                     "clienteId", "asesorId", "createdAt", "updatedAt")
-                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'borrador',$9,$10,$11,$12,$13,$14,$14)
+                     estado, "incluirBonos", "incluirFinanciamiento", "esDoble", "opcionesMetadata",
+                     observaciones, "clienteId", "asesorId", "createdAt", "updatedAt")
+                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'borrador',$9,$10,$11,$12,$13,$14,$15,$16,$16)
                 """,
                 cot_id,
                 body.numero,
@@ -218,6 +311,8 @@ async def create_cotizacion(body: CotizacionCreate, _auth: dict = Depends(requir
                 body.esquemaPago,
                 body.incluirBonos,
                 body.incluirFinanciamiento,
+                body.esDoble,
+                opciones_json,
                 body.observaciones or None,
                 cliente_id,
                 body.asesorId,
@@ -227,28 +322,7 @@ async def create_cotizacion(body: CotizacionCreate, _auth: dict = Depends(requir
             bucefalo_servicio_id = await _resolve_bucefalo_servicio(conn)
 
             for svc in body.servicios:
-                catalogo_id = svc.catalogoId
-                if catalogo_id.startswith("bucefalo-") and bucefalo_servicio_id:
-                    catalogo_id = bucefalo_servicio_id
-
-                await conn.execute(
-                    """
-                    INSERT INTO "ServicioCotizado"
-                        (id, "cotizacionId", "servicioCatalogoId", fase, "tipoPago", precio,
-                         "tiempoEntrega", entregables, notas, seleccionado, "createdAt", "updatedAt")
-                    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,true,$10,$10)
-                    """,
-                    _cuid(),
-                    cot_id,
-                    catalogo_id,
-                    svc.fase,
-                    svc.tipoPago,
-                    svc.precio,
-                    svc.tiempoEntrega,
-                    json.dumps(svc.entregables),
-                    None,
-                    now,
-                )
+                await _insert_servicio_cotizado(conn, cot_id, svc, bucefalo_servicio_id, now, body.esDoble)
 
             if body.planBucefalo:
                 await conn.execute(
@@ -265,7 +339,9 @@ async def create_cotizacion(body: CotizacionCreate, _auth: dict = Depends(requir
                 )
 
     row = await pool.fetchrow('SELECT * FROM "Cotizacion" WHERE id = $1', cot_id)
-    return dict(row)
+    result = dict(row)
+    result["opcionesMetadata"] = _parse_json(result.get("opcionesMetadata"))
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -325,8 +401,19 @@ async def update_cotizacion(
             _add("esquemaPago", '"esquemaPago"', body.esquemaPago)
             _add("incluirBonos", '"incluirBonos"', body.incluirBonos)
             _add("incluirFinanciamiento", '"incluirFinanciamiento"', body.incluirFinanciamiento)
+            _add("esDoble", '"esDoble"', body.esDoble)
             _add("observaciones", "observaciones", body.observaciones)
             _add("estado", "estado", body.estado)
+
+            es_doble_final = body.esDoble if body.esDoble is not None else existing["esDoble"]
+            if body.esDoble is not None:
+                # opcionesMetadata se sincroniza con esDoble: dict (json) si doble, NULL si no.
+                meta_json = None
+                if es_doble_final and body.opciones:
+                    meta_json = json.dumps({k: v.model_dump() for k, v in body.opciones.items()})
+                updates.append(f'"opcionesMetadata" = ${idx}')
+                params.append(meta_json)
+                idx += 1
 
             if cliente_id != existing["clienteId"]:
                 updates.append(f'"clienteId" = ${idx}')
@@ -348,27 +435,7 @@ async def update_cotizacion(
                 bucefalo_servicio_id = await _resolve_bucefalo_servicio(conn)
                 now = datetime.now(timezone.utc)
                 for svc in body.servicios:
-                    catalogo_id = svc.catalogoId
-                    if catalogo_id.startswith("bucefalo-") and bucefalo_servicio_id:
-                        catalogo_id = bucefalo_servicio_id
-                    await conn.execute(
-                        """
-                        INSERT INTO "ServicioCotizado"
-                            (id, "cotizacionId", "servicioCatalogoId", fase, "tipoPago", precio,
-                             "tiempoEntrega", entregables, notas, seleccionado, "createdAt", "updatedAt")
-                        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,true,$10,$10)
-                        """,
-                        _cuid(),
-                        cotizacion_id,
-                        catalogo_id,
-                        svc.fase,
-                        svc.tipoPago,
-                        svc.precio,
-                        svc.tiempoEntrega,
-                        json.dumps(svc.entregables),
-                        None,
-                        now,
-                    )
+                    await _insert_servicio_cotizado(conn, cotizacion_id, svc, bucefalo_servicio_id, now, es_doble_final)
 
             if body.planBucefalo is not None:
                 existing_plan = await conn.fetchrow(
@@ -505,9 +572,9 @@ async def duplicate_cotizacion(cotizacion_id: str, _auth: dict = Depends(require
                 """
                 INSERT INTO "Cotizacion"
                     (id, numero, fecha, vigencia, moneda, "tipoCambio", proyecto, "esquemaPago",
-                     estado, "incluirBonos", "incluirFinanciamiento", observaciones,
-                     "clienteId", "asesorId", "createdAt", "updatedAt")
-                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'borrador',$9,$10,$11,$12,$13,$14,$14)
+                     estado, "incluirBonos", "incluirFinanciamiento", "esDoble", "opcionesMetadata",
+                     observaciones, "clienteId", "asesorId", "createdAt", "updatedAt")
+                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'borrador',$9,$10,$11,$12,$13,$14,$15,$16,$16)
                 """,
                 new_id,
                 new_numero,
@@ -519,6 +586,8 @@ async def duplicate_cotizacion(cotizacion_id: str, _auth: dict = Depends(require
                 original["esquemaPago"],
                 original["incluirBonos"],
                 original["incluirFinanciamiento"],
+                original["esDoble"],
+                original["opcionesMetadata"],
                 original["observaciones"],
                 original["clienteId"],
                 original["asesorId"],
@@ -529,13 +598,23 @@ async def duplicate_cotizacion(cotizacion_id: str, _auth: dict = Depends(require
                 await conn.execute(
                     """
                     INSERT INTO "ServicioCotizado"
-                        (id, "cotizacionId", "servicioCatalogoId", fase, "tipoPago", precio,
-                         "tiempoEntrega", entregables, notas, seleccionado, "createdAt", "updatedAt")
-                    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$11)
+                        (id, "cotizacionId", "servicioCatalogoId", nombre, "esPersonalizado",
+                         horas, "tarifaHora", "modeloCobro", "montoMinimo", "horasIncluidas",
+                         opcion, fase, "tipoPago", precio, "tiempoEntrega", entregables, notas,
+                         seleccionado, "createdAt", "updatedAt")
+                    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$19)
                     """,
                     _cuid(),
                     new_id,
                     svc["servicioCatalogoId"],
+                    svc["nombre"],
+                    svc["esPersonalizado"],
+                    svc["horas"],
+                    svc["tarifaHora"],
+                    svc["modeloCobro"],
+                    svc["montoMinimo"],
+                    svc["horasIncluidas"],
+                    svc["opcion"],
                     svc["fase"],
                     svc["tipoPago"],
                     svc["precio"],

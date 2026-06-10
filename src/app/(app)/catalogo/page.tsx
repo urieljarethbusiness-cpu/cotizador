@@ -39,6 +39,7 @@ export default async function CatalogoPage() {
         categoriaNombre: s.categoriaRel?.nombre || "Sin categoria",
         categoriaColor: s.categoriaRel?.color || "#6b7280",
         variante: s.variante,
+        nivel: s.nivel,
         activo: s.activo,
         orden: s.orden,
       }))}

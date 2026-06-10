@@ -29,6 +29,8 @@ model Cliente {
   updatedAt DateTime @updatedAt
 
   cotizaciones Cotizacion[]
+
+  @@index([nombre, empresa])
 }
 
 model Cotizacion {
@@ -43,6 +45,8 @@ model Cotizacion {
   estado            String   @default("borrador")
   incluirBonos      Boolean  @default(false)
   incluirFinanciamiento Boolean @default(false)
+  esDoble           Boolean  @default(false)
+  opcionesMetadata  Json?
   observaciones     String?
   clienteId         String
   asesorId          String
@@ -53,6 +57,11 @@ model Cotizacion {
   asesor            User     @relation("AsesorCotizaciones", fields: [asesorId], references: [id])
   servicios         ServicioCotizado[]
   planBucefalo      PlanBucefaloCotizacion?
+
+  @@index([clienteId])
+  @@index([asesorId])
+  @@index([estado])
+  @@index([createdAt])
 }
 
 model Categoria {
@@ -89,6 +98,8 @@ model FasePaquete {
 
   paquete    Paquete  @relation(fields: [paqueteId], references: [id], onDelete: Cascade)
   servicios  ServicioPaquete[]
+
+  @@index([paqueteId])
 }
 
 model ServicioCatalogo {
@@ -102,6 +113,7 @@ model ServicioCatalogo {
   entregablesDefault  Json     @default("[]")
   categoriaId         String?
   variante            String?
+  nivel               String?
   activo              Boolean  @default(true)
   orden               Int      @default(0)
   createdAt           DateTime @default(now())
@@ -110,6 +122,9 @@ model ServicioCatalogo {
   servicios           ServicioCotizado[]
   categoriaRel        Categoria?       @relation(fields: [categoriaId], references: [id])
   paquetes            ServicioPaquete[]
+
+  @@index([categoriaId])
+  @@index([activo, fase, orden])
 }
 
 model ServicioPaquete {
@@ -123,12 +138,21 @@ model ServicioPaquete {
   fasePaquete         FasePaquete     @relation(fields: [fasePaqueteId], references: [id], onDelete: Cascade)
 
   @@unique([servicioCatalogoId, fasePaqueteId])
+  @@index([fasePaqueteId])
 }
 
 model ServicioCotizado {
   id                 String   @id @default(cuid())
   cotizacionId       String
-  servicioCatalogoId String
+  servicioCatalogoId String?
+  nombre             String?
+  esPersonalizado    Boolean  @default(false)
+  horas              Float?
+  tarifaHora         Float?
+  modeloCobro        String   @default("fijo")
+  montoMinimo        Float?
+  horasIncluidas     Float?
+  opcion             String?
   fase               Int
   tipoPago           String
   precio             Float
@@ -139,8 +163,11 @@ model ServicioCotizado {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  cotizacion         Cotizacion       @relation(fields: [cotizacionId], references: [id], onDelete: Cascade)
-  servicioCatalogo   ServicioCatalogo @relation(fields: [servicioCatalogoId], references: [id])
+  cotizacion         Cotizacion        @relation(fields: [cotizacionId], references: [id], onDelete: Cascade)
+  servicioCatalogo   ServicioCatalogo? @relation(fields: [servicioCatalogoId], references: [id])
+
+  @@index([cotizacionId])
+  @@index([servicioCatalogoId])
 }
 
 model PlanBucefaloCotizacion {

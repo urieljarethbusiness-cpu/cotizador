@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Save, Upload, Trash2, Loader2, Image } from "lucide-react";
+import { Save, Upload, Trash2, Loader2, Image as ImageIcon } from "lucide-react";
 
 const SECTIONS = [
   {
@@ -142,13 +142,14 @@ export function ConfiguracionClient({ initial }: { initial: Record<string, strin
                   <div className="flex items-start gap-4">
                     <div className="w-24 h-24 border-2 border-dashed border-border rounded-lg flex items-center justify-center bg-gray-50 shrink-0 overflow-hidden">
                       {config.logo_base64 ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- logo es un data-URL base64, next/image no aplica
                         <img
                           src={config.logo_base64.includes(":") ? `data:${config.logo_base64.replace(":", ";base64,")}` : `data:image/png;base64,${config.logo_base64}`}
                           alt="Logo"
                           className="w-full h-full object-contain p-1"
                         />
                       ) : (
-                        <Image className="w-8 h-8 text-muted" />
+                        <ImageIcon className="w-8 h-8 text-muted" />
                       )}
                     </div>
                     <div className="flex-1 space-y-2">

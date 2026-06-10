@@ -19,96 +19,111 @@ from app.models.common import ErrorResponse, OkResponse
 router = APIRouter(prefix="/paquetes", tags=["Paquetes"])
 
 
-async def _build_paquete_response(conn, paquete_row: dict) -> dict:
-    """Build a PaqueteResponse dict with nested fases and servicios."""
-    paquete_id = paquete_row["id"]
+async def _build_paquetes_responses(conn, paquete_rows: list[dict]) -> list[dict]:
+    """Build PaqueteResponse dicts for several paquetes with 2 queries in total
+    (instead of 1 + N fases per paquete)."""
+    if not paquete_rows:
+        return []
 
+    paquete_ids = [p["id"] for p in paquete_rows]
     fases_rows = await conn.fetch(
         'SELECT id, "paqueteId", nombre, orden, "createdAt", "updatedAt"'
-        ' FROM "FasePaquete" WHERE "paqueteId" = $1 ORDER BY orden ASC',
-        paquete_id,
+        ' FROM "FasePaquete" WHERE "paqueteId" = ANY($1::text[]) ORDER BY orden ASC',
+        paquete_ids,
     )
 
-    fases: list[dict] = []
-    for fase in fases_rows:
+    fase_ids = [f["id"] for f in fases_rows]
+    servicios_rows = []
+    if fase_ids:
         servicios_rows = await conn.fetch(
             'SELECT sp.id, sp."servicioCatalogoId", sp."fasePaqueteId",'
             ' sp."createdAt", sp."updatedAt",'
-            ' sc.id AS sc_id, sc.nombre AS sc_nombre, sc.descripcion AS sc_descripcion,'
-            ' sc.fase AS sc_fase, sc."tipoPago" AS sc_tipoPago,'
-            ' sc."precioBase" AS sc_precioBase, sc."tiempoEntrega" AS sc_tiempoEntrega,'
-            ' sc."entregablesDefault" AS sc_entregablesDefault,'
-            ' sc."categoriaId" AS sc_categoriaId, sc.variante AS sc_variante,'
-            ' sc.activo AS sc_activo, sc.orden AS sc_orden,'
-            ' sc."createdAt" AS sc_createdAt, sc."updatedAt" AS sc_updatedAt,'
-            ' cat.id AS cat_id, cat.nombre AS cat_nombre, cat.descripcion AS cat_descripcion,'
-            ' cat.color AS cat_color, cat.activo AS cat_activo, cat.orden AS cat_orden,'
-            ' cat."createdAt" AS cat_createdAt, cat."updatedAt" AS cat_updatedAt'
+            ' sc.id AS "sc_id", sc.nombre AS "sc_nombre", sc.descripcion AS "sc_descripcion",'
+            ' sc.fase AS "sc_fase", sc."tipoPago" AS "sc_tipoPago",'
+            ' sc."precioBase" AS "sc_precioBase", sc."tiempoEntrega" AS "sc_tiempoEntrega",'
+            ' sc."entregablesDefault" AS "sc_entregablesDefault",'
+            ' sc."categoriaId" AS "sc_categoriaId", sc.variante AS "sc_variante",'
+            ' sc.activo AS "sc_activo", sc.orden AS "sc_orden",'
+            ' sc."createdAt" AS "sc_createdAt", sc."updatedAt" AS "sc_updatedAt",'
+            ' cat.id AS "cat_id", cat.nombre AS "cat_nombre", cat.descripcion AS "cat_descripcion",'
+            ' cat.color AS "cat_color", cat.activo AS "cat_activo", cat.orden AS "cat_orden",'
+            ' cat."createdAt" AS "cat_createdAt", cat."updatedAt" AS "cat_updatedAt"'
             ' FROM "ServicioPaquete" sp'
             ' JOIN "ServicioCatalogo" sc ON sc.id = sp."servicioCatalogoId"'
             ' LEFT JOIN "Categoria" cat ON cat.id = sc."categoriaId"'
-            ' WHERE sp."fasePaqueteId" = $1',
-            fase["id"],
+            ' WHERE sp."fasePaqueteId" = ANY($1::text[])',
+            fase_ids,
         )
 
-        servicios: list[dict] = []
-        for s in servicios_rows:
-            cat = None
-            if s["cat_id"]:
-                cat = {
-                    "id": s["cat_id"],
-                    "nombre": s["cat_nombre"],
-                    "descripcion": s["cat_descripcion"],
-                    "color": s["cat_color"],
-                    "activo": s["cat_activo"],
-                    "orden": s["cat_orden"],
-                    "createdAt": s["cat_createdAt"],
-                    "updatedAt": s["cat_updatedAt"],
-                }
-            servicios.append({
-                "id": s["id"],
-                "servicioCatalogoId": s["servicioCatalogoId"],
-                "fasePaqueteId": s["fasePaqueteId"],
-                "createdAt": s["createdAt"],
-                "updatedAt": s["updatedAt"],
-                "servicio": {
-                    "id": s["sc_id"],
-                    "nombre": s["sc_nombre"],
-                    "descripcion": s["sc_descripcion"],
-                    "fase": s["sc_fase"],
-                    "tipoPago": s["sc_tipoPago"],
-                    "precioBase": s["sc_precioBase"],
-                    "tiempoEntrega": s["sc_tiempoEntrega"],
-                    "entregablesDefault": s["sc_entregablesDefault"],
-                    "categoriaId": s["sc_categoriaId"],
-                    "variante": s["sc_variante"],
-                    "activo": s["sc_activo"],
-                    "orden": s["sc_orden"],
-                    "createdAt": s["sc_createdAt"],
-                    "updatedAt": s["sc_updatedAt"],
-                    "categoriaRel": cat,
-                },
-            })
+    servicios_por_fase: dict[str, list[dict]] = {}
+    for s in servicios_rows:
+        cat = None
+        if s["cat_id"]:
+            cat = {
+                "id": s["cat_id"],
+                "nombre": s["cat_nombre"],
+                "descripcion": s["cat_descripcion"],
+                "color": s["cat_color"],
+                "activo": s["cat_activo"],
+                "orden": s["cat_orden"],
+                "createdAt": s["cat_createdAt"],
+                "updatedAt": s["cat_updatedAt"],
+            }
+        servicios_por_fase.setdefault(s["fasePaqueteId"], []).append({
+            "id": s["id"],
+            "servicioCatalogoId": s["servicioCatalogoId"],
+            "fasePaqueteId": s["fasePaqueteId"],
+            "createdAt": s["createdAt"],
+            "updatedAt": s["updatedAt"],
+            "servicio": {
+                "id": s["sc_id"],
+                "nombre": s["sc_nombre"],
+                "descripcion": s["sc_descripcion"],
+                "fase": s["sc_fase"],
+                "tipoPago": s["sc_tipoPago"],
+                "precioBase": s["sc_precioBase"],
+                "tiempoEntrega": s["sc_tiempoEntrega"],
+                "entregablesDefault": s["sc_entregablesDefault"],
+                "categoriaId": s["sc_categoriaId"],
+                "variante": s["sc_variante"],
+                "activo": s["sc_activo"],
+                "orden": s["sc_orden"],
+                "createdAt": s["sc_createdAt"],
+                "updatedAt": s["sc_updatedAt"],
+                "categoriaRel": cat,
+            },
+        })
 
-        fases.append({
+    fases_por_paquete: dict[str, list[dict]] = {}
+    for fase in fases_rows:
+        fases_por_paquete.setdefault(fase["paqueteId"], []).append({
             "id": fase["id"],
             "paqueteId": fase["paqueteId"],
             "nombre": fase["nombre"],
             "orden": fase["orden"],
             "createdAt": fase["createdAt"],
             "updatedAt": fase["updatedAt"],
-            "servicios": servicios,
+            "servicios": servicios_por_fase.get(fase["id"], []),
         })
 
-    return {
-        "id": paquete_row["id"],
-        "nombre": paquete_row["nombre"],
-        "descripcion": paquete_row["descripcion"],
-        "activo": paquete_row["activo"],
-        "createdAt": paquete_row["createdAt"],
-        "updatedAt": paquete_row["updatedAt"],
-        "fases": fases,
-    }
+    return [
+        {
+            "id": p["id"],
+            "nombre": p["nombre"],
+            "descripcion": p["descripcion"],
+            "activo": p["activo"],
+            "createdAt": p["createdAt"],
+            "updatedAt": p["updatedAt"],
+            "fases": fases_por_paquete.get(p["id"], []),
+        }
+        for p in paquete_rows
+    ]
+
+
+async def _build_paquete_response(conn, paquete_row: dict) -> dict:
+    """Build a PaqueteResponse dict with nested fases and servicios."""
+    results = await _build_paquetes_responses(conn, [paquete_row])
+    return results[0]
 
 
 @router.get("", response_model=list[PaqueteResponse])
@@ -120,10 +135,7 @@ async def list_paquetes(
         'SELECT id, nombre, descripcion, activo, "createdAt", "updatedAt"'
         ' FROM "Paquete" WHERE activo = true ORDER BY "createdAt" ASC'
     )
-    results: list[dict] = []
-    for row in rows:
-        results.append(await _build_paquete_response(conn, dict(row)))
-    return results
+    return await _build_paquetes_responses(conn, [dict(row) for row in rows])
 
 
 @router.post(

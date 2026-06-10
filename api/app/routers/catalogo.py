@@ -47,6 +47,7 @@ def _row_to_response(row, categoria_row=None) -> ServicioCatalogoResponse:
         entregablesDefault=entregables,
         categoriaId=row["categoriaId"],
         variante=row["variante"],
+        nivel=row["nivel"],
         activo=row["activo"],
         orden=row["orden"],
         createdAt=row["createdAt"],
@@ -99,16 +100,16 @@ async def list_catalogo(
         *params,
     )
 
-    result: list[ServicioCatalogoResponse] = []
-    for r in rows:
-        cat_row = None
-        if r["categoriaId"]:
-            cat_row = await db.fetchrow(
-                'SELECT * FROM "Categoria" WHERE id = $1', r["categoriaId"]
-            )
-        result.append(_row_to_response(r, cat_row))
+    # Una sola query para todas las categorías referenciadas (evita N+1).
+    cat_ids = list({r["categoriaId"] for r in rows if r["categoriaId"]})
+    cat_map: dict = {}
+    if cat_ids:
+        cat_rows = await db.fetch(
+            'SELECT * FROM "Categoria" WHERE id = ANY($1::text[])', cat_ids
+        )
+        cat_map = {c["id"]: c for c in cat_rows}
 
-    return result
+    return [_row_to_response(r, cat_map.get(r["categoriaId"])) for r in rows]
 
 
 @router.post(
@@ -134,8 +135,8 @@ async def create_catalogo(
     row = await db.fetchrow(
         'INSERT INTO "ServicioCatalogo" '
         '(nombre, descripcion, fase, "tipoPago", "precioBase", "tiempoEntrega", '
-        '"entregablesDefault", "categoriaId", variante, activo, orden) '
-        "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true, $10) RETURNING *",
+        '"entregablesDefault", "categoriaId", variante, nivel, activo, orden) '
+        "VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, true, $11) RETURNING *",
         body.nombre,
         body.descripcion,
         body.fase,
@@ -145,6 +146,7 @@ async def create_catalogo(
         entregables_json,
         body.categoriaId,
         body.variante,
+        body.nivel,
         body.orden,
     )
 
@@ -218,6 +220,7 @@ async def update_catalogo(
         "entregablesDefault": '"entregablesDefault"',
         "categoriaId": '"categoriaId"',
         "variante": "variante",
+        "nivel": "nivel",
         "activo": "activo",
         "orden": "orden",
     }

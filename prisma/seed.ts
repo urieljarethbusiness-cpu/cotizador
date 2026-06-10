@@ -583,14 +583,1031 @@ async function main() {
         "Reportes mensuales con analisis de resultados Meta Ads",
       ],
     },
+
+    // ──────────────────────────────────────────────────────────────
+    // SERVICIOS NIVELADOS (Catalogo E3 - Cotizacion Final)
+    // Precios convertidos de USD a MXN al tipo de cambio 17.30
+    // Niveles: Emprendedor / PYME / Empresario / Corporativo
+    // ──────────────────────────────────────────────────────────────
+
+    // ── LOGO E IDENTIDAD (Fase 1, unico) ──
+    {
+      nombre: "Logo e Identidad",
+      descripcion: "Diseno de identidad de marca y logotipo",
+      fase: 1,
+      tipoPago: "unico",
+      precioBase: 6903, // 399 USD
+      tiempoEntrega: "7 - 15 dias",
+      categoria: "diseno",
+      nivel: "Emprendedor",
+      orden: 101,
+      entregablesDefault: [
+        "Investigacion de Tendencias, Mercado, Competencia y Demanda",
+        "Creacion y Propuesta del Naming: 2",
+        "Propuesta del Logotipo: 2",
+        "Creacion Logotipo",
+        "Diseno de Aplicativos Fisicos: 2",
+        "Diseno de Aplicativos Digitales: 4",
+        "Manual de Identidad",
+        "Atencion y asesoria al cliente",
+        "Revisiones",
+      ],
+    },
+    {
+      nombre: "Logo e Identidad",
+      descripcion: "Diseno de identidad de marca y logotipo",
+      fase: 1,
+      tipoPago: "unico",
+      precioBase: 12093, // 699 USD
+      tiempoEntrega: "7 - 15 dias",
+      categoria: "diseno",
+      nivel: "PYME",
+      orden: 102,
+      entregablesDefault: [
+        "Investigacion de Tendencias, Mercado, Competencia y Demanda",
+        "Creacion y Propuesta del Naming: 3",
+        "Propuesta del Logotipo: 3",
+        "Creacion Logotipo",
+        "Aplicativos Fisicos: 4",
+        "Aplicativos Digitales: 4",
+        "Manual de Identidad",
+        "Atencion y asesoria al cliente",
+        "Revisiones",
+        "Kit Basico para Redes Sociales (1 portada, 1 foto de perfil, 1 template RSS)",
+      ],
+    },
+    {
+      nombre: "Logo e Identidad",
+      descripcion: "Diseno de identidad de marca y logotipo",
+      fase: 1,
+      tipoPago: "unico",
+      precioBase: 17283, // 999 USD
+      tiempoEntrega: "7 - 15 dias",
+      categoria: "diseno",
+      nivel: "Empresario",
+      orden: 103,
+      entregablesDefault: [
+        "Investigacion de Tendencias, Mercado, Competencia y Demanda",
+        "Creacion y Propuesta del Naming: 4",
+        "Propuesta del Logotipo: 4",
+        "Creacion Logotipo",
+        "Aplicativos Fisicos: 6",
+        "Aplicativos Digitales: 4",
+        "Manual de Identidad",
+        "Atencion y asesoria al cliente",
+        "Revisiones",
+        "Kit Basico para Redes Sociales (1 portada, 1 foto de perfil, 4 templates RSS)",
+      ],
+    },
+    {
+      nombre: "Logo e Identidad",
+      descripcion: "Diseno de identidad de marca y logotipo",
+      fase: 1,
+      tipoPago: "unico",
+      precioBase: 42368, // 2449 USD
+      tiempoEntrega: "10 - 20 dias",
+      categoria: "diseno",
+      nivel: "Corporativo",
+      orden: 104,
+      entregablesDefault: [
+        "Investigacion de Tendencias, Mercado, Competencia y Demanda",
+        "Creacion y Propuesta del Naming: 5",
+        "Propuesta del Logotipo: 5",
+        "Creacion Logotipo",
+        "Aplicativos Fisicos: 10",
+        "Aplicativos Digitales: 4",
+        "Manual de Identidad",
+        "Atencion y asesoria al cliente",
+        "Revisiones",
+        "Kit Basico para Redes Sociales (3 portadas, 1 foto de perfil, 6 templates RSS)",
+        "Iconografia",
+        "Registro del IMPI (10 anos)",
+      ],
+    },
+
+    // ── PAGINA WEB (Fase 1, unico) ──
+    {
+      nombre: "Pagina Web",
+      descripcion: "Creacion, configuracion y optimizacion de sitio web",
+      fase: 1,
+      tipoPago: "unico",
+      precioBase: 7768, // 449 USD
+      tiempoEntrega: "15 - 30 dias",
+      categoria: "sitio_web",
+      nivel: "Emprendedor",
+      orden: 111,
+      entregablesDefault: [
+        "Propuesta de Diseno: 2",
+        "Creacion, Configuracion y Optimizacion de Sitio Web",
+        "Configuracion de Chat en Sitio Web",
+        "Optimizacion Basico SEO",
+        "Optimizacion basica de Velocidad de Carga",
+        "Estadisticas de Sitio Web (mensual)",
+        "Cambios de Informacion al Mes (No Acumulable): 1",
+        "Capacitacion basica para Manejo de Sitio Web",
+        "Reuniones de Trabajo",
+        "Alta en Buscadores",
+        "Cuentas de E-mail con Dominio",
+        "Paginas base (Gracias/Politicas/Terminos/Contacto/Nosotros/404)",
+        "Diseno Responsivo",
+        "Integracion de Formulario",
+        "Espacio 12 GB",
+        "Certificado Seguridad SSL (1 ano)",
+        "Integracion de Hosting (1 ano)",
+        "Asesoria y Adquisicion de Dominio (1 ano)",
+      ],
+    },
+    {
+      nombre: "Pagina Web",
+      descripcion: "Creacion, configuracion y optimizacion de sitio web",
+      fase: 1,
+      tipoPago: "unico",
+      precioBase: 13996, // 809 USD
+      tiempoEntrega: "15 - 30 dias",
+      categoria: "sitio_web",
+      nivel: "PYME",
+      orden: 112,
+      entregablesDefault: [
+        "Propuesta de Diseno: 4",
+        "Creacion, Configuracion y Optimizacion de Sitio Web",
+        "Configuracion de Chat en Sitio Web",
+        "Optimizacion Basico SEO",
+        "Optimizacion basica de Velocidad de Carga",
+        "Estadisticas de Sitio Web (mensual)",
+        "Cambios de Informacion al Mes (No Acumulable): 2",
+        "Capacitacion basica para Manejo de Sitio Web",
+        "Reuniones de Trabajo",
+        "Alta en Buscadores",
+        "Cuentas de E-mail con Dominio",
+        "Paginas base (Gracias/Politicas/Terminos/Contacto/Nosotros/404)",
+        "Diseno Responsivo",
+        "Integracion de Formulario",
+        "Espacio 12 GB",
+        "Certificado Seguridad SSL (1 ano)",
+        "Integracion de Hosting (1 ano)",
+        "Asesoria y Adquisicion de Dominio (1 ano)",
+      ],
+    },
+    {
+      nombre: "Pagina Web",
+      descripcion: "Creacion, configuracion y optimizacion de sitio web",
+      fase: 1,
+      tipoPago: "unico",
+      precioBase: 21781, // 1259 USD
+      tiempoEntrega: "20 - 35 dias",
+      categoria: "sitio_web",
+      nivel: "Empresario",
+      orden: 113,
+      entregablesDefault: [
+        "Propuesta de Diseno: 6",
+        "Creacion, Configuracion y Optimizacion de Sitio Web",
+        "Configuracion de Chat en Sitio Web",
+        "Optimizacion Basico SEO",
+        "Optimizacion basica de Velocidad de Carga",
+        "Estadisticas de Sitio Web (mensual)",
+        "Cambios de Informacion al Mes (No Acumulable): 3",
+        "Investigacion Tendencias, Mercado, Competencia y Demanda",
+        "Capacitacion basica para Manejo de Sitio Web",
+        "Reuniones de Trabajo",
+        "Alta en Buscadores",
+        "Cuentas de E-mail con Dominio",
+        "Paginas base (Gracias/Politicas/Terminos/Contacto/Nosotros/404)",
+        "Diseno Responsivo",
+        "Integracion de Formulario",
+        "Espacio 12 GB",
+        "Integracion Base de Datos para Correo",
+        "Certificado Seguridad SSL (1 ano)",
+        "Integracion de Hosting (1 ano)",
+        "Asesoria y Adquisicion de Dominio (1 ano)",
+      ],
+    },
+    {
+      nombre: "Pagina Web",
+      descripcion: "Creacion, configuracion y optimizacion de sitio web",
+      fase: 1,
+      tipoPago: "unico",
+      precioBase: 39254, // 2269 USD
+      tiempoEntrega: "25 - 45 dias",
+      categoria: "sitio_web",
+      nivel: "Corporativo",
+      orden: 114,
+      entregablesDefault: [
+        "Propuesta de Diseno: 8",
+        "Creacion, Configuracion y Optimizacion de Sitio Web",
+        "Configuracion de Chat en Sitio Web",
+        "Optimizacion Avanzado SEO",
+        "Optimizacion Avanzado de Velocidad de Carga",
+        "Optimizacion SEO Local",
+        "Estadisticas de Sitio Web (mensual)",
+        "Cambios de Informacion al Mes (No Acumulable): 5",
+        "Investigacion Tendencias, Mercado, Competencia y Demanda",
+        "Escritura Comercial",
+        "Capacitacion basica para Manejo de Sitio Web",
+        "Reuniones de Trabajo",
+        "Alta en Buscadores",
+        "Cuentas de E-mail con Dominio",
+        "Paginas base (incluye Bolsa de Trabajo)",
+        "Diseno Responsivo",
+        "Integracion de Formulario",
+        "Espacio 12 GB",
+        "Integracion Base de Datos para Correo",
+        "Certificado Seguridad SSL (1 ano)",
+        "Integracion de Hosting (1 ano)",
+        "Asesoria y Adquisicion de Dominio (1 ano)",
+        "Integracion CRM",
+      ],
+    },
+
+    // ── TIENDA EN LINEA (Fase 1, unico) ── (hoja "Tienda en linea")
+    {
+      nombre: "Tienda en Linea",
+      descripcion: "Desarrollo de tienda en linea (Magento, Shopify, WordPress)",
+      fase: 1,
+      tipoPago: "unico",
+      precioBase: 17283, // 999 USD
+      tiempoEntrega: "20 - 40 dias",
+      categoria: "ecommerce",
+      nivel: "Emprendedor",
+      orden: 121,
+      entregablesDefault: [
+        "Configuracion en Tienda en Linea (Magento, Shopify, WordPress)",
+        "Eleccion de plantilla y Estructura de diseno (UX, UI)",
+        "Desarrollo y Estructura de tienda Optimizada para SEO",
+        "Creacion y Configuracion de Categorias",
+        "Diseno y Configuracion de Blog",
+        "Carga de Productos: 100",
+        "Capacitacion",
+        "Atencion y asesoria al cliente",
+        "Certificado Seguridad SSL (1 ano)",
+        "Integracion de Hosting (1 ano)",
+        "Asesoria y Adquisicion de Dominio (1 ano)",
+        "Integracion de metodos de pago",
+        "Integracion de metodos de envio",
+        "Integracion de Chat",
+        "Integracion y Configuracion de Google Analytics",
+        "Integracion y Configuracion de Search Console",
+      ],
+    },
+    {
+      nombre: "Tienda en Linea",
+      descripcion: "Desarrollo de tienda en linea (Magento, Shopify, WordPress)",
+      fase: 1,
+      tipoPago: "unico",
+      precioBase: 26106, // 1509 USD
+      tiempoEntrega: "25 - 45 dias",
+      categoria: "ecommerce",
+      nivel: "PYME",
+      orden: 122,
+      entregablesDefault: [
+        "Configuracion en Tienda en Linea (Magento, Shopify, WordPress)",
+        "Eleccion de plantilla y Estructura de diseno (UX, UI)",
+        "Desarrollo y Estructura de tienda Optimizada para SEO",
+        "Creacion y Configuracion de Categorias",
+        "Diseno y Configuracion de Blog",
+        "Carga de Productos: 250",
+        "Configuracion de productos seleccionados y recomendados (upsell, cross selling)",
+        "Capacitacion",
+        "Atencion y asesoria al cliente",
+        "Certificado Seguridad SSL (1 ano)",
+        "Integracion de Hosting (1 ano)",
+        "Asesoria y Adquisicion de Dominio (1 ano)",
+        "Integracion de metodos de pago",
+        "Integracion de metodos de envio",
+        "Integracion de Chat",
+        "Integracion y Configuracion de Google Analytics",
+        "Integracion y Configuracion de Search Console",
+        "Estrategias para recuperacion de carritos abandonados",
+      ],
+    },
+    {
+      nombre: "Tienda en Linea",
+      descripcion: "Desarrollo de tienda en linea (Magento, Shopify, WordPress)",
+      fase: 1,
+      tipoPago: "unico",
+      precioBase: 26106, // 1509 USD
+      tiempoEntrega: "30 - 50 dias",
+      categoria: "ecommerce",
+      nivel: "Empresario",
+      orden: 123,
+      entregablesDefault: [
+        "Configuracion en Tienda en Linea (Magento, Shopify, WordPress)",
+        "Eleccion de plantilla y Estructura de diseno (UX, UI)",
+        "Desarrollo y Estructura de tienda Optimizada para SEO",
+        "Creacion y Configuracion de Categorias",
+        "Diseno y Configuracion de Blog",
+        "Carga de Productos: 500",
+        "Configuracion de productos seleccionados y recomendados (upsell, cross selling)",
+        "Desarrollo de Contenido SEO",
+        "Asesoramiento para estrategias de promociones y descuentos",
+        "Capacitacion",
+        "Atencion y asesoria al cliente",
+        "Certificado Seguridad SSL (1 ano)",
+        "Integracion de Hosting (1 ano)",
+        "Asesoria y Adquisicion de Dominio (1 ano)",
+        "Integracion de metodos de pago",
+        "Integracion de metodos de envio",
+        "Integracion de Chat",
+        "Integracion y Configuracion de Google Analytics",
+        "Integracion y Configuracion de Search Console",
+        "Estrategias para recuperacion de carritos abandonados",
+      ],
+    },
+
+    // ── E-COMMERCE (Fase 1, unico) ── (hoja "Hemeroteca", version mas completa)
+    {
+      nombre: "E-commerce",
+      descripcion: "Tienda en linea completa: plataforma, hosting, dominio y puesta en marcha",
+      fase: 1,
+      tipoPago: "unico",
+      precioBase: 17283, // 999 USD
+      tiempoEntrega: "20 - 40 dias",
+      categoria: "ecommerce",
+      variante: "Hemeroteca",
+      nivel: "Emprendedor",
+      orden: 131,
+      entregablesDefault: [
+        "Asesoria y Eleccion de Plataforma",
+        "Hosting, Eleccion y Asesoria de Dominio",
+        "Certificado SSL",
+        "Asesoria y Eleccion de Plantilla Base",
+        "Configuracion en Tienda en Linea",
+        "Integracion Metodos de Pago",
+        "Integracion Metodos de Envio",
+        "Integracion de Chat: 1",
+        "Configuracion Paginas Transaccionales",
+        "Integracion Google Analytics",
+        "Integracion Search Console",
+        "Estructura Tienda en Linea Optimizada",
+        "Creacion y Configuracion de Categorias",
+        "Diseno y Configuracion de Blog",
+        "Carga de Productos: 100",
+        "Diseno y Personalizacion de Tienda",
+        "Capacitacion y Puesta en Marcha",
+        "Soporte por Correo Electronico (24 hrs)",
+        "Juntas de Retroalimentacion cada Mes",
+      ],
+    },
+    {
+      nombre: "E-commerce",
+      descripcion: "Tienda en linea completa: plataforma, hosting, dominio y puesta en marcha",
+      fase: 1,
+      tipoPago: "unico",
+      precioBase: 26106, // 1509 USD
+      tiempoEntrega: "25 - 45 dias",
+      categoria: "ecommerce",
+      variante: "Hemeroteca",
+      nivel: "PYME",
+      orden: 132,
+      entregablesDefault: [
+        "Asesoria y Eleccion de Plataforma",
+        "Hosting, Eleccion y Asesoria de Dominio",
+        "Certificado SSL",
+        "Asesoria y Eleccion de Plantilla Base",
+        "Configuracion en Tienda en Linea",
+        "Integracion Metodos de Pago",
+        "Integracion Metodos de Envio",
+        "Integracion de Chat: 2",
+        "Configuracion Paginas Transaccionales",
+        "Integracion Google Analytics",
+        "Integracion Search Console",
+        "Estructura Tienda en Linea Optimizada",
+        "Creacion y Configuracion de Categorias",
+        "Diseno y Configuracion de Blog",
+        "Carga de Productos: 250",
+        "Diseno y Personalizacion de Tienda",
+        "Capacitacion y Puesta en Marcha",
+        "Soporte por Correo Electronico (12 hrs)",
+        "Juntas de Retroalimentacion cada Mes",
+      ],
+    },
+    {
+      nombre: "E-commerce",
+      descripcion: "Tienda en linea completa: plataforma, hosting, dominio y puesta en marcha",
+      fase: 1,
+      tipoPago: "unico",
+      precioBase: 34756, // 2009 USD
+      tiempoEntrega: "30 - 50 dias",
+      categoria: "ecommerce",
+      variante: "Hemeroteca",
+      nivel: "Empresario",
+      orden: 133,
+      entregablesDefault: [
+        "Asesoria y Eleccion de Plataforma",
+        "Hosting, Eleccion y Asesoria de Dominio",
+        "Certificado SSL",
+        "Asesoria y Eleccion de Plantilla Base",
+        "Configuracion en Tienda en Linea",
+        "Integracion Metodos de Pago",
+        "Integracion Metodos de Envio",
+        "Integracion de Chat: 3",
+        "Configuracion Paginas Transaccionales",
+        "Integracion Google Analytics",
+        "Integracion Search Console",
+        "Estructura Tienda en Linea Optimizada",
+        "Creacion y Configuracion de Categorias",
+        "Diseno y Configuracion de Blog",
+        "Carga de Productos: 500",
+        "Diseno y Personalizacion de Tienda",
+        "Capacitacion y Puesta en Marcha",
+        "Soporte por Correo Electronico (8 hrs)",
+        "Juntas de Retroalimentacion cada Mes",
+        "Diseno Responsivo UX",
+        "Configuracion de Carritos Abandonados",
+        "Up-Selling, Cross-Selling",
+      ],
+    },
+    {
+      nombre: "E-commerce",
+      descripcion: "Tienda en linea completa: plataforma, hosting, dominio y puesta en marcha",
+      fase: 1,
+      tipoPago: "unico",
+      precioBase: 43579, // 2519 USD
+      tiempoEntrega: "35 - 60 dias",
+      categoria: "ecommerce",
+      variante: "Hemeroteca",
+      nivel: "Corporativo",
+      orden: 134,
+      entregablesDefault: [
+        "Asesoria y Eleccion de Plataforma",
+        "Hosting, Eleccion y Asesoria de Dominio",
+        "Certificado SSL",
+        "Asesoria y Eleccion de Plantilla Base",
+        "Configuracion en Tienda en Linea",
+        "Integracion Metodos de Pago",
+        "Integracion Metodos de Envio",
+        "Integracion de Chat: 4",
+        "Configuracion Paginas Transaccionales",
+        "Integracion Google Analytics",
+        "Integracion Search Console",
+        "Estructura Tienda en Linea Optimizada",
+        "Creacion y Configuracion de Categorias",
+        "Diseno y Configuracion de Blog",
+        "Carga de Productos: ilimitados",
+        "Diseno y Personalizacion de Tienda",
+        "Capacitacion y Puesta en Marcha",
+        "Soporte por Correo Electronico (inmediata)",
+        "Juntas de Retroalimentacion cada Mes",
+        "Diseno Responsivo UX",
+        "Configuracion de Carritos Abandonados",
+        "Up-Selling, Cross-Selling",
+        "Desarrollo Contenido SEO",
+        "Asesoramiento Promociones y Descuentos",
+        "Configuracion Programas de Lealtad",
+      ],
+    },
+
+    // ── MENU DIGITAL (Fase 1, unico) ──
+    {
+      nombre: "Menu Digital",
+      descripcion: "Menu digital con QR personalizado",
+      fase: 1,
+      tipoPago: "unico",
+      precioBase: 1713, // 99 USD
+      tiempoEntrega: "7 - 15 dias",
+      categoria: "sitio_web",
+      nivel: "Emprendedor",
+      orden: 141,
+      entregablesDefault: [
+        "Diseno de Menu Digital",
+        "QR Personalizado / Dinamico",
+        "Diseno de Pegatinas",
+        "Un Idioma (Espanol)",
+        "Lecturas Ilimitadas",
+        "Alojamiento de Menu y QR",
+        "Soporte por Ticket",
+        "Juntas de Retroalimentacion Cada Mes",
+      ],
+    },
+    {
+      nombre: "Menu Digital",
+      descripcion: "Menu digital con QR personalizado",
+      fase: 1,
+      tipoPago: "unico",
+      precioBase: 3443, // 199 USD
+      tiempoEntrega: "7 - 15 dias",
+      categoria: "sitio_web",
+      nivel: "PYME",
+      orden: 142,
+      entregablesDefault: [
+        "Diseno de Menu Digital",
+        "QR Personalizado / Dinamico",
+        "Diseno de Pegatinas",
+        "Un Idioma (Espanol)",
+        "Lecturas Ilimitadas",
+        "Alojamiento de Menu y QR",
+        "Soporte por Ticket",
+        "Juntas de Retroalimentacion Cada Mes",
+        "Integracion de Redes Sociales",
+        "Hasta 100 Productos",
+        "Actualizaciones por Ano: 10",
+        "Boton de WhatsApp",
+        "Promocion Mensual",
+        "Captacion de Base de Datos",
+        "E-mail Marketing Automation",
+        "Templates a Elegir: 5",
+      ],
+    },
+    {
+      nombre: "Menu Digital",
+      descripcion: "Menu digital con QR personalizado",
+      fase: 1,
+      tipoPago: "unico",
+      precioBase: 5173, // 299 USD
+      tiempoEntrega: "10 - 20 dias",
+      categoria: "sitio_web",
+      nivel: "Empresario",
+      orden: 143,
+      entregablesDefault: [
+        "Diseno de Menu Digital",
+        "QR Personalizado / Dinamico",
+        "Diseno de Pegatinas",
+        "Un Idioma (Espanol)",
+        "Lecturas Ilimitadas",
+        "Alojamiento de Menu y QR",
+        "Soporte por Ticket",
+        "Juntas de Retroalimentacion Cada Mes",
+        "Integracion de Redes Sociales",
+        "Hasta 100 Productos",
+        "Actualizaciones por Ano: 10",
+        "Boton de WhatsApp",
+        "Promocion Mensual",
+        "Captacion de Base de Datos",
+        "E-mail Marketing Automation",
+        "Templates a Elegir: 5",
+        "Pagina Web (Menu Digital)",
+        "Pago en Linea",
+        "Personalizacion de Productos",
+        "Guia de Nutricion por Producto",
+        "Multiples Addons",
+        "Notificacion de Nueva Orden",
+        "Mensajes de Horarios de Atencion",
+        "Multiples Menus o Secciones",
+        "100% Responsivo",
+        "Etiquetas Personalizables",
+      ],
+    },
+
+    // ── GOOGLE ADS (Fase 2, mensual) ──
+    {
+      nombre: "Google Ads",
+      descripcion: "Creacion, configuracion y optimizacion de campanas Google Ads",
+      fase: 2,
+      tipoPago: "mensual",
+      precioBase: 2578, // 149 USD
+      tiempoEntrega: "Servicio mensual",
+      categoria: "ads",
+      nivel: "Emprendedor",
+      orden: 201,
+      entregablesDefault: [
+        "Creacion y Configuracion de cuenta Google Ads",
+        "Investigacion y Optimizacion de palabras clave positivas y negativas",
+        "Creacion de Campanas Publicitarias: 1 a 3",
+        "Optimizacion de presupuesto de Campanas diaria",
+        "Integracion con Google Analytics",
+        "Integracion de etiqueta de pixeles de conversion",
+        "Reporte de Resultado mensual y junta de retroalimentacion",
+        "Atencion y asesoria al cliente",
+      ],
+    },
+    {
+      nombre: "Google Ads",
+      descripcion: "Creacion, configuracion y optimizacion de campanas Google Ads",
+      fase: 2,
+      tipoPago: "mensual",
+      precioBase: 5173, // 299 USD
+      tiempoEntrega: "Servicio mensual",
+      categoria: "ads",
+      nivel: "PYME",
+      orden: 202,
+      entregablesDefault: [
+        "Creacion y Configuracion de cuenta Google Ads",
+        "Investigacion y Optimizacion de palabras clave positivas y negativas",
+        "Creacion de Campanas Publicitarias: 1 a 6",
+        "Optimizacion de presupuesto de Campanas diaria",
+        "Configuracion de Anuncios de Remarketing",
+        "Integracion con Google Analytics",
+        "Integracion de etiqueta de pixeles de conversion",
+        "Reporte de Resultado mensual y junta de retroalimentacion",
+        "Atencion y asesoria al cliente",
+      ],
+    },
+    {
+      nombre: "Google Ads",
+      descripcion: "Creacion, configuracion y optimizacion de campanas Google Ads",
+      fase: 2,
+      tipoPago: "mensual",
+      precioBase: 10363, // 599 USD
+      tiempoEntrega: "Servicio mensual",
+      categoria: "ads",
+      nivel: "Empresario",
+      orden: 203,
+      entregablesDefault: [
+        "Creacion y Configuracion de cuenta Google Ads",
+        "Investigacion y Optimizacion de palabras clave positivas y negativas",
+        "Creacion de Campanas Publicitarias: 10",
+        "Optimizacion de presupuesto de Campanas diaria",
+        "Configuracion de Anuncios de Remarketing",
+        "Configuracion de Anuncios para Red Display",
+        "Automatizacion de envio de Ficha de Prospectos",
+        "Integracion con Google Analytics",
+        "Integracion de etiqueta de pixeles de conversion",
+        "Integracion de Herramientas de automatizacion",
+        "Reporte de Resultado mensual y junta de retroalimentacion",
+        "Atencion y asesoria al cliente",
+      ],
+    },
+    {
+      nombre: "Google Ads",
+      descripcion: "Creacion, configuracion y optimizacion de campanas Google Ads",
+      fase: 2,
+      tipoPago: "mensual",
+      precioBase: 17456, // 1009 USD
+      tiempoEntrega: "Servicio mensual",
+      categoria: "ads",
+      nivel: "Corporativo",
+      orden: 204,
+      entregablesDefault: [
+        "Creacion y Configuracion de cuenta Google Ads",
+        "Investigacion y Optimizacion de palabras clave positivas y negativas",
+        "Creacion de Campanas Publicitarias: 15",
+        "Optimizacion de presupuesto de Campanas diaria",
+        "Configuracion de Anuncios de Remarketing",
+        "Configuracion de Anuncios para Red Display",
+        "Configuracion de Google Merchant Center",
+        "Configuracion y Optimizacion del Fit de productos",
+        "Configuracion de Campanas para Shopping",
+        "Configuracion de cuenta BING",
+        "Configuracion de Campanas BING",
+        "Automatizacion de envio de Ficha de Prospectos",
+        "Integracion con Google Analytics",
+        "Integracion de etiqueta de pixeles de conversion",
+        "Integracion de Herramientas de automatizacion",
+        "Reporte de Resultado mensual y junta de retroalimentacion",
+        "Atencion y asesoria al cliente",
+      ],
+    },
+
+    // ── FB & IG ADS (Fase 2, mensual) ──
+    {
+      nombre: "Facebook & Instagram Ads",
+      descripcion: "Creacion y optimizacion de campanas en Meta (Facebook e Instagram)",
+      fase: 2,
+      tipoPago: "mensual",
+      precioBase: 2578, // 149 USD
+      tiempoEntrega: "Servicio mensual",
+      categoria: "ads",
+      nivel: "Emprendedor",
+      orden: 211,
+      entregablesDefault: [
+        "Investigacion, Segmentacion y Optimizacion del Publico Objetivo",
+        "Creacion y Configuracion del Administrador de Anuncios",
+        "Creacion de Artes para Anuncios Publicitarios",
+        "Creacion y Configuracion de Campanas Publicitarias: 1 a 3",
+        "Configuracion de lista de Remarketing",
+        "Optimizacion de presupuesto diario y campanas publicitarias",
+        "Instalacion de Pixeles en Pag. Web",
+        "Reporte de Resultado mensual y junta de retroalimentacion",
+        "Atencion y asesoria al cliente",
+      ],
+    },
+    {
+      nombre: "Facebook & Instagram Ads",
+      descripcion: "Creacion y optimizacion de campanas en Meta (Facebook e Instagram)",
+      fase: 2,
+      tipoPago: "mensual",
+      precioBase: 5173, // 299 USD
+      tiempoEntrega: "Servicio mensual",
+      categoria: "ads",
+      nivel: "PYME",
+      orden: 212,
+      entregablesDefault: [
+        "Investigacion, Segmentacion y Optimizacion del Publico Objetivo",
+        "Creacion y Configuracion del Administrador de Anuncios",
+        "Creacion de Artes para Anuncios Publicitarios",
+        "Creacion y Configuracion de Campanas Publicitarias: 1 a 6",
+        "Configuracion de lista de Remarketing",
+        "Optimizacion de presupuesto diario y campanas publicitarias",
+        "Instalacion de Pixeles en Pag. Web",
+        "Reporte de Resultado mensual y junta de retroalimentacion",
+        "Atencion y asesoria al cliente",
+      ],
+    },
+    {
+      nombre: "Facebook & Instagram Ads",
+      descripcion: "Creacion y optimizacion de campanas en Meta (Facebook e Instagram)",
+      fase: 2,
+      tipoPago: "mensual",
+      precioBase: 6903, // 399 USD
+      tiempoEntrega: "Servicio mensual",
+      categoria: "ads",
+      nivel: "Empresario",
+      orden: 213,
+      entregablesDefault: [
+        "Investigacion, Segmentacion y Optimizacion del Publico Objetivo",
+        "Creacion y Configuracion del Administrador de Anuncios",
+        "Creacion de Artes para Anuncios Publicitarios",
+        "Creacion y Configuracion de Campanas Publicitarias: 1 a 8",
+        "Configuracion de lista de Remarketing",
+        "Optimizacion de presupuesto diario y campanas publicitarias",
+        "Instalacion de Pixeles en Pag. Web",
+        "Integracion de herramientas de automatizacion",
+        "Reporte de Resultado mensual y junta de retroalimentacion",
+        "Atencion y asesoria al cliente",
+      ],
+    },
+    {
+      nombre: "Facebook & Instagram Ads",
+      descripcion: "Creacion y optimizacion de campanas en Meta (Facebook e Instagram)",
+      fase: 2,
+      tipoPago: "mensual",
+      precioBase: 13131, // 759 USD
+      tiempoEntrega: "Servicio mensual",
+      categoria: "ads",
+      nivel: "Corporativo",
+      orden: 214,
+      entregablesDefault: [
+        "Investigacion, Segmentacion y Optimizacion del Publico Objetivo",
+        "Creacion y Configuracion del Administrador de Anuncios",
+        "Creacion de Artes para Anuncios Publicitarios",
+        "Creacion y Configuracion de Campanas Publicitarias: 1 a 15",
+        "Creacion de Anuncios para Shopping",
+        "Configuracion de lista de Remarketing",
+        "Configuracion de catalogo de Productos de Facebook",
+        "Optimizacion de presupuesto diario y campanas publicitarias",
+        "Instalacion de Pixeles en Pag. Web",
+        "Integracion de herramientas de automatizacion",
+        "Reporte de Resultado mensual y junta de retroalimentacion",
+        "Atencion y asesoria al cliente",
+      ],
+    },
+
+    // ── MANEJO DE REDES SOCIALES (Fase 2, mensual) ──
+    {
+      nombre: "Manejo de Redes Sociales",
+      descripcion: "Gestion y contenido de redes sociales",
+      fase: 2,
+      tipoPago: "mensual",
+      precioBase: 6903, // 399 USD
+      tiempoEntrega: "Servicio mensual",
+      categoria: "redes",
+      nivel: "Emprendedor",
+      orden: 221,
+      entregablesDefault: [
+        "Creacion, Configuracion y/o Optimizacion de pagina de Facebook",
+        "Medicion de conversiones",
+        "Estrategia de contenido Publicitario",
+        "Creacion de embudo de conversion",
+        "Desarrollo de Cover",
+        "Creacion de artes y copys para Post",
+        "Posteos de Publicacion al mes: 10",
+        "Asesoria al cliente por correo electronico (24 hrs)",
+        "Informes periodicos",
+        "Integracion de Google Analytics",
+      ],
+    },
+    {
+      nombre: "Manejo de Redes Sociales",
+      descripcion: "Gestion y contenido de redes sociales",
+      fase: 2,
+      tipoPago: "mensual",
+      precioBase: 12093, // 699 USD
+      tiempoEntrega: "Servicio mensual",
+      categoria: "redes",
+      nivel: "PYME",
+      orden: 222,
+      entregablesDefault: [
+        "Creacion, Configuracion y/o Optimizacion de pagina de Facebook",
+        "Medicion de conversiones",
+        "Estrategia de contenido Publicitario",
+        "Creacion de embudo de conversion",
+        "Desarrollo de Cover",
+        "Creacion de artes y copys para Post",
+        "Posteos de Publicacion al mes: 15",
+        "Asesoria al cliente por correo electronico (24 hrs)",
+        "Informes periodicos",
+        "Integracion de Google Analytics",
+        "Integracion Search Console",
+        "Desarrollo Tienda en Linea Optimizada",
+        "Video",
+      ],
+    },
+    {
+      nombre: "Manejo de Redes Sociales",
+      descripcion: "Gestion y contenido de redes sociales",
+      fase: 2,
+      tipoPago: "mensual",
+      precioBase: 17456, // 1009 USD
+      tiempoEntrega: "Servicio mensual",
+      categoria: "redes",
+      nivel: "Empresario",
+      orden: 223,
+      entregablesDefault: [
+        "Creacion, Configuracion y/o Optimizacion de pagina de Facebook",
+        "Medicion de conversiones",
+        "Estrategia de contenido Publicitario",
+        "Creacion de embudo de conversion",
+        "Desarrollo de Cover",
+        "Creacion de artes y copys para Post",
+        "Posteos de Publicacion al mes: 15",
+        "Asesoria al cliente por correo electronico (24 hrs)",
+        "Informes periodicos",
+        "Integracion de Google Analytics",
+        "Integracion Search Console",
+        "Desarrollo Tienda en Linea Optimizada",
+        "Video",
+        "Gifs",
+        "Dinamicas",
+      ],
+    },
+    {
+      nombre: "Manejo de Redes Sociales",
+      descripcion: "Gestion y contenido de redes sociales",
+      fase: 2,
+      tipoPago: "mensual",
+      precioBase: 42195, // 2439 USD
+      tiempoEntrega: "Servicio mensual",
+      categoria: "redes",
+      nivel: "Corporativo",
+      orden: 224,
+      entregablesDefault: [
+        "Creacion, Configuracion y/o Optimizacion de pagina de Facebook",
+        "Medicion de conversiones",
+        "Estrategia de contenido Publicitario",
+        "Creacion de embudo de conversion",
+        "Desarrollo de Cover",
+        "Creacion de artes y copys para Post",
+        "Posteos de Publicacion al mes: 15",
+        "Asesoria al cliente por correo electronico (24 hrs)",
+        "Informes periodicos",
+        "Integracion de Google Analytics",
+        "Integracion Search Console",
+        "Desarrollo Tienda en Linea Optimizada",
+        "Video",
+        "Gifs",
+        "Dinamicas",
+        "Concursos",
+        "Manejo Inmediato de Crisis",
+      ],
+    },
+
+    // ── SEO (Fase 3, mensual) ──
+    // NOTA: el Excel origen traia Empresario y Corporativo a 199 USD (error de copia:
+    // mismo precio que Emprendedor pese a tener mas features). Corregido al patron
+    // lineal +$100/nivel (5/10/15/20 keywords -> 199/299/399/499 USD).
+    {
+      nombre: "Posicionamiento SEO",
+      descripcion: "Estrategia y posicionamiento SEO mensual",
+      fase: 3,
+      tipoPago: "mensual",
+      precioBase: 3443, // 199 USD
+      tiempoEntrega: "Servicio mensual",
+      categoria: "seo",
+      nivel: "Emprendedor",
+      orden: 301,
+      entregablesDefault: [
+        "No. KeyWords: 5",
+        "Estudio y definicion de Palabras Clave",
+        "Analisis de la competencia",
+        "Optimizacion tecnica de la estructura del Sitio a nivel SEO",
+        "Optimizacion de la velocidad de carga en Sitio",
+        "Creacion y Optimizacion del Sitemap.xml",
+        "Reporte mensual de trafico y posicion Web",
+        "Integracion y Configuracion de Google Search Console",
+        "Integracion y Configuracion de Google Analytics",
+        "Plan para desarrollo de contenido Estrategico para SEO",
+        "Estrategia y Generacion de BackLinks",
+        "Alta de Buscadores",
+        "Generacion de trafico social a tu Sitio Web",
+        "Sindicacion en Redes Sociales Externas",
+        "Atencion y asesoria al cliente",
+      ],
+    },
+    {
+      nombre: "Posicionamiento SEO",
+      descripcion: "Estrategia y posicionamiento SEO mensual",
+      fase: 3,
+      tipoPago: "mensual",
+      precioBase: 5173, // 299 USD
+      tiempoEntrega: "Servicio mensual",
+      categoria: "seo",
+      nivel: "PYME",
+      orden: 302,
+      entregablesDefault: [
+        "No. KeyWords: 10",
+        "Estudio y definicion de Palabras Clave",
+        "Analisis de la competencia",
+        "Optimizacion tecnica de la estructura del Sitio a nivel SEO",
+        "Optimizacion de la velocidad de carga en Sitio",
+        "Optimizacion de SEO local (Google My Business)",
+        "Creacion y Optimizacion del Sitemap.xml",
+        "Reporte mensual de trafico y posicion Web",
+        "Integracion y Configuracion de Google Search Console",
+        "Integracion y Configuracion de Google Analytics",
+        "Plan para desarrollo de contenido Estrategico para SEO",
+        "Estrategia y Generacion de BackLinks",
+        "Alta de Buscadores",
+        "Generacion de trafico social a tu Sitio Web",
+        "Sindicacion en Redes Sociales Externas",
+        "Atencion y asesoria al cliente",
+      ],
+    },
+    {
+      nombre: "Posicionamiento SEO",
+      descripcion: "Estrategia y posicionamiento SEO mensual",
+      fase: 3,
+      tipoPago: "mensual",
+      precioBase: 6903, // 399 USD (corregido)
+      tiempoEntrega: "Servicio mensual",
+      categoria: "seo",
+      nivel: "Empresario",
+      orden: 303,
+      entregablesDefault: [
+        "No. KeyWords: 15",
+        "Estudio y definicion de Palabras Clave",
+        "Analisis de la competencia",
+        "Optimizacion tecnica de la estructura del Sitio a nivel SEO",
+        "Optimizacion de la velocidad de carga en Sitio",
+        "Optimizacion de SEO local (Google My Business)",
+        "Creacion y Optimizacion del Sitemap.xml",
+        "Reporte mensual de trafico y posicion Web",
+        "Integracion y Configuracion de Google Search Console: 15",
+        "Integracion y Configuracion de Google Analytics",
+        "Plan para desarrollo de contenido Estrategico para SEO",
+        "Estrategia y Generacion de BackLinks",
+        "Alta de Buscadores",
+        "Generacion de trafico social a tu Sitio Web",
+        "Sindicacion en Redes Sociales Externas",
+        "Desarrollo de contenido para Sitios Externos",
+        "Atencion y asesoria al cliente",
+      ],
+    },
+    {
+      nombre: "Posicionamiento SEO",
+      descripcion: "Estrategia y posicionamiento SEO mensual",
+      fase: 3,
+      tipoPago: "mensual",
+      precioBase: 8633, // 499 USD (corregido)
+      tiempoEntrega: "Servicio mensual",
+      categoria: "seo",
+      nivel: "Corporativo",
+      orden: 304,
+      entregablesDefault: [
+        "No. KeyWords: 20",
+        "Estudio y definicion de Palabras Clave",
+        "Analisis de la competencia",
+        "Optimizacion tecnica de la estructura del Sitio a nivel SEO",
+        "Optimizacion de la velocidad de carga en Sitio",
+        "Optimizacion de SEO local (Google My Business)",
+        "Creacion y Optimizacion del Sitemap.xml",
+        "Reporte mensual de trafico y posicion Web",
+        "Integracion y Configuracion de Google Search Console: 15",
+        "Integracion y Configuracion de Google Analytics",
+        "Plan para desarrollo de contenido Estrategico para SEO",
+        "Estrategia y Generacion de BackLinks",
+        "Alta de Buscadores",
+        "Generacion de trafico social a tu Sitio Web",
+        "Sindicacion en Redes Sociales Externas",
+        "Desarrollo de contenido para Sitios Externos",
+        "Atencion y asesoria al cliente",
+      ],
+    },
+
+    // ── ESTRATEGIA EMPRESARIAL EN ECOMMERCE (Fase 0, unico, sin niveles ni precio en Excel) ──
+    {
+      nombre: "Estrategia Empresarial en Ecommerce",
+      descripcion: "Auditoria y estrategia integral para ecommerce (SEO, tecnica y seguridad Shopify, estudios de mercado/competencia y embudos de venta)",
+      fase: 0,
+      tipoPago: "unico",
+      precioBase: 12900,
+      tiempoEntrega: "10 - 20 dias",
+      categoria: "estrategia",
+      orden: 100,
+      entregablesDefault: [
+        "Auditoria completa de situacion actual del SEO del Sitio",
+        "Auditoria Tecnica de Shopify",
+        "Auditoria en Seguridad de Shopify",
+        "Estudio de canales de comunicacion y captacion",
+        "Estudio de Segmentos de Mercado para Landing Pages de prospeccion",
+        "Estudio de Keyword Research para Categorizacion Jerarquica de Ecommerce",
+        "Estudio de Keyword Research para creacion de Landing Page para prospeccion",
+        "Estudio de competencia organica",
+        "Estudio de competencia pagada",
+        "Estudio de tendencias",
+        "Adicional: Embudo de ventas para Ecommerce",
+        "Adicional: Embudo de ventas para captacion",
+      ],
+    },
   ];
 
   for (const servicio of servicios) {
     const catNombre = catAlias[servicio.categoria] || "Desarrollo Personalizado";
+    const servicioId =
+      servicio.nombre.toLowerCase().replace(/\s+/g, "-").substring(0, 30) + "-" + servicio.orden;
     await prisma.servicioCatalogo.upsert({
-      where: { id: servicio.nombre.toLowerCase().replace(/\s+/g, "-").substring(0, 30) + "-" + servicio.orden },
+      where: { id: servicioId },
       update: {},
       create: {
+        id: servicioId,
         nombre: servicio.nombre,
         descripcion: servicio.descripcion,
         fase: servicio.fase,
@@ -599,7 +1616,8 @@ async function main() {
         tiempoEntrega: servicio.tiempoEntrega,
         entregablesDefault: servicio.entregablesDefault,
         categoriaId: catMap[catNombre] || null,
-        variante: servicio.variante || null,
+        variante: ("variante" in servicio ? servicio.variante : null) || null,
+        nivel: ("nivel" in servicio ? servicio.nivel : null) || null,
         orden: servicio.orden,
       },
     });
@@ -642,17 +1660,267 @@ async function main() {
     faseMap[fg.orden] = created.id;
   }
 
-  const existingLinks = await prisma.servicioPaquete.findMany();
-  if (existingLinks.length === 0) {
-    for (const s of allServicios) {
-      const fasePaqueteId = faseMap[s.fase];
-      if (fasePaqueteId) {
-        await prisma.servicioPaquete.create({
-          data: {
+  for (const s of allServicios) {
+    const fasePaqueteId = faseMap[s.fase];
+    if (fasePaqueteId) {
+      await prisma.servicioPaquete.upsert({
+        where: {
+          servicioCatalogoId_fasePaqueteId: {
             servicioCatalogoId: s.id,
             fasePaqueteId,
           },
-        }).catch(() => {});
+        },
+        update: {},
+        create: {
+          servicioCatalogoId: s.id,
+          fasePaqueteId,
+        },
+      });
+    }
+  }
+
+  // ── PAQUETES RECOMENDADOS PYME ──
+  // Resuelve un servicio del catalogo por nombre (+ nivel opcional). El nivel
+  // desambigua servicios con nombre repetido (ej. "Posicionamiento SEO" existe
+  // generico con nivel null y tambien por nivel). Lanza error si no resuelve
+  // exactamente 1 servicio para que cualquier nombre mal escrito reviente aqui.
+  const findServId = (nombre: string, nivel: string | null = null): string => {
+    const matches = allServicios.filter(
+      (s) => s.nombre === nombre && (s.nivel ?? null) === (nivel ?? null)
+    );
+    if (matches.length !== 1) {
+      throw new Error(
+        `Paquete PyME: '${nombre}' (nivel=${nivel}) resolvio ${matches.length} servicios`
+      );
+    }
+    return matches[0].id;
+  };
+
+  type ServRef = { nombre: string; nivel?: string | null };
+  type PaqueteDef = {
+    id: string;
+    nombre: string;
+    descripcion: string;
+    fases: { orden: number; nombre: string; servicios: ServRef[] }[];
+  };
+
+  const FASE_NOMBRES = [
+    "Auditoria / Acompanamiento",
+    "Setup e Infraestructura",
+    "Publicidad y Manejo",
+    "Contenido y SEO",
+  ];
+
+  const paquetesPyme: PaqueteDef[] = [
+    {
+      id: "paquete-arranque",
+      nombre: "Arranque Esencial",
+      descripcion:
+        "Inicio - cualquier giro. Minimo viable para una PyME que arranca: presencia profesional en redes y Google, y primeros clientes.",
+      fases: [
+        { orden: 0, nombre: FASE_NOMBRES[0], servicios: [{ nombre: "Auditoria en Redes Sociales" }] },
+        {
+          orden: 1,
+          nombre: FASE_NOMBRES[1],
+          servicios: [
+            { nombre: "Creacion y Optimizacion de Redes Sociales" },
+            { nombre: "Creacion y Optimizacion de la Ficha de Google My Business" },
+          ],
+        },
+        { orden: 2, nombre: FASE_NOMBRES[2], servicios: [{ nombre: "Manejo Basico de Redes Sociales" }] },
+      ],
+    },
+    {
+      id: "paquete-marca",
+      nombre: "Marca + Presencia",
+      descripcion:
+        "Inicio - marca nueva o personal. Imagen profesional (identidad), redes y primeras campanas de alcance antes de invertir en pauta fuerte.",
+      fases: [
+        { orden: 0, nombre: FASE_NOMBRES[0], servicios: [{ nombre: "Auditoria en Redes Sociales" }] },
+        {
+          orden: 1,
+          nombre: FASE_NOMBRES[1],
+          servicios: [
+            { nombre: "Logo e Identidad", nivel: "Emprendedor" },
+            { nombre: "Creacion y Optimizacion de Redes Sociales" },
+            { nombre: "Creacion y Optimizacion de la Ficha de Google My Business" },
+          ],
+        },
+        {
+          orden: 2,
+          nombre: FASE_NOMBRES[2],
+          servicios: [
+            { nombre: "Manejo Basico de Redes Sociales" },
+            { nombre: "Manejo y Optimizacion de Meta Ads" },
+          ],
+        },
+        { orden: 3, nombre: FASE_NOMBRES[3], servicios: [{ nombre: "Desarrollo de Plan de Contenido" }] },
+      ],
+    },
+    {
+      id: "paquete-local",
+      nombre: "Negocio Local en Crecimiento",
+      descripcion:
+        "Crecimiento - giro local (restaurante, consultorio, tienda fisica, servicios). Visibilidad local y captacion por WhatsApp/llamada: web, ficha de Google, redes, Meta Ads y SEO local.",
+      fases: [
+        { orden: 0, nombre: FASE_NOMBRES[0], servicios: [{ nombre: "Auditoria en Sitio Web" }] },
+        {
+          orden: 1,
+          nombre: FASE_NOMBRES[1],
+          servicios: [
+            { nombre: "Pagina Web", nivel: "Emprendedor" },
+            { nombre: "Creacion y Optimizacion de la Ficha de Google My Business" },
+            { nombre: "Creacion y Optimizacion de Redes Sociales" },
+          ],
+        },
+        {
+          orden: 2,
+          nombre: FASE_NOMBRES[2],
+          servicios: [
+            { nombre: "Manejo Basico de Redes Sociales" },
+            { nombre: "Manejo y Optimizacion de Meta Ads" },
+          ],
+        },
+        { orden: 3, nombre: FASE_NOMBRES[3], servicios: [{ nombre: "Posicionamiento SEO" }] },
+      ],
+    },
+    {
+      id: "paquete-leads-b2b",
+      nombre: "Servicios / B2B: Generacion de Leads",
+      descripcion:
+        "Crecimiento - servicios profesionales / B2B. Motor de prospeccion: sitio web solido, CRM Bucefalo, campanas de Google Ads, contenido y SEO.",
+      fases: [
+        {
+          orden: 0,
+          nombre: FASE_NOMBRES[0],
+          servicios: [{ nombre: "Auditoria en Sitio Web" }, { nombre: "Estudio Digital de Mercado" }],
+        },
+        {
+          orden: 1,
+          nombre: FASE_NOMBRES[1],
+          servicios: [
+            { nombre: "Diseno de Sitio Web (WordPress)" },
+            { nombre: "Configuracion y Puesta en Marcha del CRM Bucefalo" },
+            { nombre: "Configuracion, Optimizacion y Puesta en Marcha de Google Ads y Meta Ads" },
+          ],
+        },
+        {
+          orden: 2,
+          nombre: FASE_NOMBRES[2],
+          servicios: [
+            { nombre: "Configuracion y Optimizacion Google Ads" },
+            { nombre: "Plan Mensual CRM Bucefalo" },
+          ],
+        },
+        {
+          orden: 3,
+          nombre: FASE_NOMBRES[3],
+          servicios: [{ nombre: "Desarrollo de Plan de Contenido" }, { nombre: "Posicionamiento SEO" }],
+        },
+      ],
+    },
+    {
+      id: "paquete-ecommerce",
+      nombre: "Ecommerce Lanzamiento",
+      descripcion:
+        "Inicio / Crecimiento - ecommerce. Vender en linea desde cero con buen setup de medicion y pauta: tienda WooCommerce, CRM y campanas de Google y Meta.",
+      fases: [
+        { orden: 0, nombre: FASE_NOMBRES[0], servicios: [{ nombre: "Auditoria en Ecommerce" }] },
+        {
+          orden: 1,
+          nombre: FASE_NOMBRES[1],
+          servicios: [
+            { nombre: "Diseno de Ecommerce (WooCommerce)" },
+            { nombre: "Configuracion, Optimizacion y Puesta en Marcha de Google Ads y Meta Ads" },
+            { nombre: "Configuracion y Puesta en Marcha del CRM Bucefalo" },
+          ],
+        },
+        {
+          orden: 2,
+          nombre: FASE_NOMBRES[2],
+          servicios: [
+            { nombre: "Manejo y Optimizacion de Meta Ads" },
+            { nombre: "Configuracion y Optimizacion Google Ads" },
+          ],
+        },
+      ],
+    },
+    {
+      id: "paquete-360",
+      nombre: "Escalamiento 360 Integral",
+      descripcion:
+        "Escalamiento - negocio consolidado, cualquier giro. Paquete tope: ads en niveles altos, redes profesionales, contenido, SEO completo y acompanamiento estrategico. El asesor recorta segun presupuesto.",
+      fases: [
+        {
+          orden: 0,
+          nombre: FASE_NOMBRES[0],
+          servicios: [
+            { nombre: "Auditoria en Sitio Web" },
+            { nombre: "Auditoria de cuentas Google Ads y Meta Ads" },
+            { nombre: "Estudio Digital de Mercado" },
+            { nombre: "Plan de Acompanamiento Integral" },
+          ],
+        },
+        {
+          orden: 1,
+          nombre: FASE_NOMBRES[1],
+          servicios: [
+            { nombre: "Diseno de Identidad Corporativa" },
+            { nombre: "Diseno de Sitio Web (WordPress)" },
+            { nombre: "Configuracion y Puesta en Marcha del CRM Bucefalo" },
+            { nombre: "Configuracion, Optimizacion y Puesta en Marcha de Google Ads y Meta Ads" },
+          ],
+        },
+        {
+          orden: 2,
+          nombre: FASE_NOMBRES[2],
+          servicios: [
+            { nombre: "Google Ads", nivel: "Empresario" },
+            { nombre: "Facebook & Instagram Ads", nivel: "Empresario" },
+            { nombre: "Manejo de Redes Sociales", nivel: "PYME" },
+            { nombre: "Plan Mensual CRM Bucefalo" },
+          ],
+        },
+        {
+          orden: 3,
+          nombre: FASE_NOMBRES[3],
+          servicios: [
+            { nombre: "Desarrollo de Plan de Contenido" },
+            { nombre: "Generacion de Contenido" },
+            { nombre: "Estrategia SEO Completa" },
+          ],
+        },
+      ],
+    },
+  ];
+
+  for (const pq of paquetesPyme) {
+    const paqueteRec = await prisma.paquete.upsert({
+      where: { id: pq.id },
+      update: { nombre: pq.nombre, descripcion: pq.descripcion, activo: true },
+      create: { id: pq.id, nombre: pq.nombre, descripcion: pq.descripcion, activo: true },
+    });
+
+    for (const fase of pq.fases) {
+      const faseId = `fase-${pq.id}-${fase.orden}`;
+      const faseCreated = await prisma.fasePaquete.upsert({
+        where: { id: faseId },
+        update: { nombre: fase.nombre, orden: fase.orden },
+        create: { id: faseId, paqueteId: paqueteRec.id, nombre: fase.nombre, orden: fase.orden },
+      });
+
+      for (const ref of fase.servicios) {
+        const servicioCatalogoId = findServId(ref.nombre, ref.nivel ?? null);
+        await prisma.servicioPaquete.upsert({
+          where: {
+            servicioCatalogoId_fasePaqueteId: {
+              servicioCatalogoId,
+              fasePaqueteId: faseCreated.id,
+            },
+          },
+          update: {},
+          create: { servicioCatalogoId, fasePaqueteId: faseCreated.id },
+        });
       }
     }
   }
@@ -666,8 +1934,10 @@ async function main() {
     { numero: 6, titulo: "Script de Ventas", descripcion: "Script de Ventas con mas de 100 complementos" },
   ];
 
-  for (const bono of bonos) {
-    await prisma.bono.create({ data: bono });
+  if ((await prisma.bono.count()) === 0) {
+    for (const bono of bonos) {
+      await prisma.bono.create({ data: bono });
+    }
   }
 
   const planes = [

@@ -46,6 +46,12 @@
 - **Bucéfalo CRM plan prices** (in `calculators.ts`, NOT the DB): basico=$1,000, estandar=$3,500, premium=$4,500, empresarial=$7,500 (monthly).
 - **Financing** lives in the `FinanciamientoPlan` table (3/6/9/12 months). Formula: `comisionTotal = monto × comision%`, `pagoMensual = (monto + comisionTotal) × (1 + tasa) / meses`, then add 16% IVA. Both backends must keep this formula identical.
 
+## Auth
+
+- **JWT sessions** (`src/lib/auth.ts`) signed with `jose` (HS256, 7-day expiry), stored in the `cotizador-session` httpOnly cookie. `JWT_SECRET` env var is **required** (throws at startup if missing).
+- **`src/middleware.ts`** gates everything except `PUBLIC_PATHS` (`/login`, `/api/auth/login`, `/api/auth/logout`, `/api/health`). Unauthenticated API calls → 401 JSON; pages → redirect to `/login`. On success it injects `x-user-id` / `x-user-role` request headers for downstream handlers.
+- Passwords hashed with `bcryptjs`. Roles: `asesor` (default), and others stored as free-form strings.
+
 ## Deployment (Coolify)
 
 - Production stack: `docker-compose.coolify.yml` (postgres + web + api). In Coolify set **Docker Compose Location** to `/docker-compose.coolify.yml`. Local dev keeps using `docker-compose.yml` + `start.bat`.
@@ -59,21 +65,31 @@
 
 ```
 src/
-  app/           # Next.js App Router pages + API routes
-    api/         # Route handlers (REST endpoints)
-    cotizaciones/[id]/editar/  # Edit mode (reuses CotizacionEditor via EditorLoader)
-  components/    # Shared client components (ExportButtons, Sidebar)
-  lib/           # Utilities: db.ts, store.ts, calculators.ts, pdf-generator.ts
+  app/
+    (app)/         # Authed route group: dashboard, cotizaciones, clientes, catalogo, configuracion (has its own layout.tsx + Sidebar)
+    api/           # Next.js route handlers (REST): auth, catalogo, categorias, cotizaciones, configuracion, paquetes, export, import
+    login/         # Public login page
+  components/      # CotizacionForm, ExportButtons, EstadoBadge, layout/Sidebar
+  lib/             # auth, db, store, calculators, pdf-generator, schemas, config-helpers
   generated/prisma/  # Prisma client output (gitignored)
 prisma/
-  schema.prisma  # 8 models
-  seed.ts        # All catalog data (23 services, bonos, planes, config)
-  migrations/    # Prisma migration files
+  schema.prisma  # 13 models (User, Cliente, Cotizacion, Categoria, Paquete, FasePaquete,
+                 #   ServicioCatalogo, ServicioPaquete, ServicioCotizado, PlanBucefaloCotizacion,
+                 #   Configuracion, Bono, FinanciamientoPlan)
+  seed.ts        # All catalog data (services, categorias, bonos, planes, config) — idempotent upserts
+  migrations/    # 3 migrations
+api/             # Standalone Python FastAPI + MCP server (see below)
 ```
 
-- **Zustand store** (`src/lib/store.ts`) manages cotización editor state (draft form). Used by both new and edit pages.
+- **Zustand store** (`src/lib/store.ts`) holds the cotización draft. Used by both the new (`cotizaciones/nueva`) and edit (`cotizaciones/[id]/editar`) pages, both of which render `CotizacionForm.tsx`.
 - **ExportButtons.tsx** has 4 variants: `ExportExcelButtonSaved` / `ExportPDFButtonSaved` (GET by ID) and `ExportExcelButtonDraft` / `ExportPDFButtonDraft` (POST with body).
-- The old standalone `ExportExcelButton.tsx` was deleted — all exports now go through `ExportButtons.tsx`.
+
+## Python API (`api/`) — Optional Second Backend
+
+- **FastAPI app** (`api/main.py`) exposing the same domain as REST, **plus an MCP server at `/mcp`** for AI agents (n8n, Claude, ChatGPT). Tools/resources defined in `api/app/mcp/`.
+- Auth: **API key** (`X-API-Key` or `Authorization: Bearer`) for agents; JWT for human login. Routers in `api/app/routers/`, business logic in `api/app/services/` (its own `calculators.py`, `pdf_generator.py`, `excel_generator.py` — mirror the TS versions).
+- Run: `cd api && pip install -r requirements.txt && uvicorn main:app --reload --port 8000`. Swagger at `/docs`. Full endpoint reference in `api/COTIZADOR_API_SKILL.md`.
+- It reads `DB_*`, `API_KEY`, `JWT_SECRET` env vars (same DB as Prisma).
 
 ## Domain
 

@@ -4,14 +4,13 @@ import { prisma } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 export default async function NuevaCotizacionPage() {
-  const [servicios, asesores, clientes, paquetes] = await Promise.all([
+  const [servicios, asesores, paquetes] = await Promise.all([
     prisma.servicioCatalogo.findMany({
       where: { activo: true },
       orderBy: { orden: "asc" },
       include: { categoriaRel: true },
     }),
     prisma.user.findMany({ orderBy: { name: "asc" } }),
-    prisma.cliente.findMany({ orderBy: { nombre: "asc" } }),
     prisma.paquete.findMany({
       where: { activo: true },
       include: {

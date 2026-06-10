@@ -1,33 +1,60 @@
 # Cotizador E3
 
-Sistema de cotizaciones de Consultoría E3. Dos backends sobre la misma base de datos PostgreSQL:
+Sistema de generación de cotizaciones para Consultoría E3 (marketing digital, Querétaro MX).
+Servicios organizados en 4 fases, dos tipos de pago (único / mensual), planes CRM Bucéfalo
+y financiamiento opcional. Exporta a PDF y Excel.
 
-- **Web (Next.js 16)** — `src/`, puerto 3000. UI completa: cotizaciones, clientes, catálogo, configuración, export PDF/Excel. Prisma es dueño del esquema y las migraciones.
-- **API (FastAPI + MCP)** — `api/`, puerto 8000. REST para integraciones (n8n, agentes de IA) con servidor MCP en `/mcp`. Referencia completa en `api/COTIZADOR_API_SKILL.md`.
+## Stack
 
-## Desarrollo local (Windows)
+- **Frontend / app web:** Next.js 16 (App Router) + React 19 + Tailwind CSS v4 + Zustand
+- **ORM:** Prisma 7 (cliente generado en `src/generated/prisma`, driver adapter `PrismaPg`)
+- **Base de datos:** PostgreSQL 16 (vía Docker)
+- **Auth:** JWT (`jose`) en cookie httpOnly, contraseñas con `bcryptjs`
+- **API alterna:** servicio Python FastAPI + servidor MCP en [`api/`](api/) (para n8n / agentes de IA)
 
-Requisitos: Node 20+, Docker Desktop.
+## Requisitos
 
-```bash
-# 1. Copia las variables de entorno
-copy .env.example .env   # y define JWT_SECRET
+- Node.js 20+
+- Docker (para PostgreSQL)
+- Un archivo `.env` en la raíz — copia [.env.example](.env.example) y define al menos `JWT_SECRET`
 
-# 2. Levanta PostgreSQL + API Python y el dev server de Next.js
-start.bat
+## Arranque rápido (Windows)
+
+```bat
+start.bat   :: levanta PostgreSQL en Docker, aplica migraciones y arranca Next.js
+stop.bat    :: detiene todo
 ```
 
-`start.bat` levanta el compose local (`docker-compose.yml`), aplica migraciones y arranca `npm run dev`. Para detener todo: `stop.bat`.
+## Arranque manual
 
-Comandos útiles:
+```bash
+docker compose up -d postgres   # base de datos
+npx prisma migrate deploy        # aplica migraciones
+npx tsx prisma/seed.ts           # carga catálogo (idempotente)
+npm run dev                      # http://localhost:3000
+```
+
+## Comandos
 
 | Comando | Propósito |
 |---------|-----------|
-| `npm run dev` | Dev server Next.js (puerto 3000) |
-| `npm run build` | Build de producción |
-| `npx prisma migrate dev` | Crear/aplicar migración |
-| `npx tsx prisma/seed.ts` | Seed (idempotente; usuarios vía `SEED_*`) |
-| `npx prisma studio` | GUI de la base de datos |
+| `npm run dev` | Servidor de desarrollo (puerto 3000) |
+| `npm run build` | Build de producción (incluye chequeo de tipos) |
+| `npm run lint` | ESLint |
+| `npm run db:migrate` | `prisma migrate dev` |
+| `npm run db:seed` | Carga de datos semilla |
+| `npm run db:studio` | Prisma Studio |
+| `npm run db:generate` | Regenera el cliente Prisma |
+
+## API Python (opcional)
+
+```bash
+cd api
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000   # Swagger en /docs, MCP en /mcp
+```
+
+Referencia completa de endpoints en [`api/COTIZADOR_API_SKILL.md`](api/COTIZADOR_API_SKILL.md).
 
 ## Despliegue en Coolify
 
@@ -65,6 +92,7 @@ El stack de producción está en [docker-compose.coolify.yml](docker-compose.coo
 - El servidor MCP queda en `https://<dominio-api>/mcp` (auth por `X-API-Key`).
 - La fórmula de financiamiento y los cálculos viven duplicados en `src/lib/calculators.ts` y `api/app/services/calculators.py` — mantenlos en paridad.
 
-## Arquitectura
+## Documentación para agentes
 
-Ver [AGENTS.md](AGENTS.md) para convenciones, gotchas de Prisma 7 / PDFKit / Next 16 y el modelo de datos.
+Las convenciones del proyecto, gotchas de Prisma 7 / PDFKit / Next.js 16 y el modelo de datos
+están en [`AGENTS.md`](AGENTS.md) (importado por `CLAUDE.md`).
