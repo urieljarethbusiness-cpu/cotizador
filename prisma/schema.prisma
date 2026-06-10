@@ -1,0 +1,180 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  password     String
+  name         String
+  role         String   @default("asesor")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  cotizaciones Cotizacion[] @relation("AsesorCotizaciones")
+}
+
+model Cliente {
+  id        String   @id @default(cuid())
+  nombre    String
+  empresa   String?
+  email     String?
+  telefono  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cotizaciones Cotizacion[]
+}
+
+model Cotizacion {
+  id                String   @id @default(cuid())
+  numero            String   @unique
+  fecha             DateTime @default(now())
+  vigencia          DateTime
+  moneda            String   @default("MXN")
+  tipoCambio        String   @default("NA")
+  proyecto          String   @default("MKT Digital")
+  esquemaPago       String   @default("Pago Unico/Mensual")
+  estado            String   @default("borrador")
+  incluirBonos      Boolean  @default(false)
+  incluirFinanciamiento Boolean @default(false)
+  observaciones     String?
+  clienteId         String
+  asesorId          String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  cliente           Cliente  @relation(fields: [clienteId], references: [id])
+  asesor            User     @relation("AsesorCotizaciones", fields: [asesorId], references: [id])
+  servicios         ServicioCotizado[]
+  planBucefalo      PlanBucefaloCotizacion?
+}
+
+model Categoria {
+  id          String   @id @default(cuid())
+  nombre      String   @unique
+  descripcion String?
+  color       String   @default("#6b7280")
+  activo      Boolean  @default(true)
+  orden       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  servicios   ServicioCatalogo[]
+}
+
+model Paquete {
+  id          String   @id @default(cuid())
+  nombre      String
+  descripcion String?
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  fases       FasePaquete[]
+}
+
+model FasePaquete {
+  id         String   @id @default(cuid())
+  paqueteId  String
+  nombre     String
+  orden      Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  paquete    Paquete  @relation(fields: [paqueteId], references: [id], onDelete: Cascade)
+  servicios  ServicioPaquete[]
+}
+
+model ServicioCatalogo {
+  id                  String   @id @default(cuid())
+  nombre              String
+  descripcion         String?
+  fase                Int      @default(1)
+  tipoPago            String   @default("unico")
+  precioBase          Float
+  tiempoEntrega       String   @default("4 - 10 dias")
+  entregablesDefault  Json     @default("[]")
+  categoriaId         String?
+  variante            String?
+  activo              Boolean  @default(true)
+  orden               Int      @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  servicios           ServicioCotizado[]
+  categoriaRel        Categoria?       @relation(fields: [categoriaId], references: [id])
+  paquetes            ServicioPaquete[]
+}
+
+model ServicioPaquete {
+  id                  String   @id @default(cuid())
+  servicioCatalogoId  String
+  fasePaqueteId       String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  servicio            ServicioCatalogo @relation(fields: [servicioCatalogoId], references: [id], onDelete: Cascade)
+  fasePaquete         FasePaquete     @relation(fields: [fasePaqueteId], references: [id], onDelete: Cascade)
+
+  @@unique([servicioCatalogoId, fasePaqueteId])
+}
+
+model ServicioCotizado {
+  id                 String   @id @default(cuid())
+  cotizacionId       String
+  servicioCatalogoId String
+  fase               Int
+  tipoPago           String
+  precio             Float
+  tiempoEntrega      String
+  entregables        Json     @default("[]")
+  notas              String?
+  seleccionado       Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  cotizacion         Cotizacion       @relation(fields: [cotizacionId], references: [id], onDelete: Cascade)
+  servicioCatalogo   ServicioCatalogo @relation(fields: [servicioCatalogoId], references: [id])
+}
+
+model PlanBucefaloCotizacion {
+  id           String   @id @default(cuid())
+  cotizacionId String   @unique
+  nivel        String   @default("basico")
+  precio       Float
+  seleccionado Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  cotizacion   Cotizacion @relation(fields: [cotizacionId], references: [id], onDelete: Cascade)
+}
+
+model Configuracion {
+  id        String   @id @default(cuid())
+  clave     String   @unique
+  valor     String
+  updatedAt DateTime @updatedAt
+}
+
+model Bono {
+  id        String   @id @default(cuid())
+  numero    Int
+  titulo    String
+  descripcion String
+  activo    Boolean  @default(true)
+}
+
+model FinanciamientoPlan {
+  id          String   @id @default(cuid())
+  meses       Int      @unique
+  tasa        Float
+  comision    Float
+  montoMinimo Float
+  iva         Float    @default(0.16)
+}
