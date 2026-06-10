@@ -46,6 +46,15 @@
 - **Bucéfalo CRM plan prices** (in `calculators.ts`, NOT the DB): basico=$1,000, estandar=$3,500, premium=$4,500, empresarial=$7,500 (monthly).
 - **Financing** lives in the `FinanciamientoPlan` table (3/6/9/12 months). Formula: `comisionTotal = monto × comision%`, `pagoMensual = (monto + comisionTotal) × (1 + tasa) / meses`, then add 16% IVA. Both backends must keep this formula identical.
 
+## Deployment (Coolify)
+
+- Production stack: `docker-compose.coolify.yml` (postgres + web + api). In Coolify set **Docker Compose Location** to `/docker-compose.coolify.yml`. Local dev keeps using `docker-compose.yml` + `start.bat`.
+- The `web` container runs `prisma migrate deploy` on every start, and the seed only when `RUN_SEED=true`. Seed users/passwords come from `SEED_*` env vars (see `.env.example`) — `prisma/seed.ts` never overwrites an existing password unless the env var is set.
+- `DATABASE_URL` is only used by the Prisma CLI (migrations); the apps use individual `DB_*` vars. Both must point to the same DB.
+- Healthchecks: web `GET /api/health` (public in middleware, pings DB), api `GET /health`.
+- Root `Dockerfile` builds Next.js with `JWT_SECRET=placeholder-build-only` (auth.ts throws at import without it; all pages are force-dynamic so nothing gets baked).
+- `*.xlsx` is gitignored (business files must never be committed).
+
 ## Architecture
 
 ```

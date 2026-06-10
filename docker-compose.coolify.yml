@@ -1,0 +1,89 @@
+# Cotizador E3 — stack de producción para Coolify
+#
+# En Coolify: crear recurso "Docker Compose" apuntando a este repo y configurar
+# "Docker Compose Location" = /docker-compose.coolify.yml
+#
+# Las variables SERVICE_FQDN_* las resuelve Coolify automáticamente (asignan
+# dominio a cada servicio). Define JWT_SECRET, API_KEY, DB_PASSWORD y las
+# SEED_* en el panel de variables de entorno de Coolify.
+#
+# Para desarrollo local sigue usándose docker-compose.yml + start.bat.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-cotizador_e3}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - SERVICE_FQDN_WEB_3000
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_NAME=${DB_NAME:-cotizador_e3}
+      # Solo la usa el CLI de Prisma (migrate deploy); debe coincidir con DB_*
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-cotizador_e3}
+      - JWT_SECRET=${JWT_SECRET}
+      # Seed inicial: pon RUN_SEED=true solo en el primer despliegue
+      - RUN_SEED=${RUN_SEED:-false}
+      - SEED_ADMIN_EMAIL=${SEED_ADMIN_EMAIL:-admin@e3.local}
+      - SEED_ADMIN_PASSWORD=${SEED_ADMIN_PASSWORD}
+      - SEED_ADMIN_NAME=${SEED_ADMIN_NAME:-Administrador}
+      - SEED_ASESOR_EMAIL=${SEED_ASESOR_EMAIL}
+      - SEED_ASESOR_PASSWORD=${SEED_ASESOR_PASSWORD}
+      - SEED_ASESOR_NAME=${SEED_ASESOR_NAME}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 5
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - SERVICE_FQDN_API_8000
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_NAME=${DB_NAME:-cotizador_e3}
+      - API_KEY=${API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      # web aplica las migraciones de Prisma; el api usa las mismas tablas
+      web:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health').status==200 else 1)"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 5
+
+volumes:
+  postgres_data:
