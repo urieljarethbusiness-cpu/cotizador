@@ -25,6 +25,10 @@ FROM base AS runner
 ENV NODE_ENV=production
 ENV PORT=3000
 
+# openssl: el CLI de Prisma lo necesita para detectar la versión de libssl
+RUN apt-get update -y && apt-get install -y --no-install-recommends openssl \
+  && rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
