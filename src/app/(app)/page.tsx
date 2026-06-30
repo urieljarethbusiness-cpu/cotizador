@@ -17,7 +17,16 @@ export default async function DashboardPage() {
     prisma.cotizacion.findMany({
       take: 10,
       orderBy: { createdAt: "desc" },
-      include: { cliente: true, asesor: true, servicios: true },
+      select: {
+        id: true,
+        numero: true,
+        fecha: true,
+        estado: true,
+        cliente: { select: { nombre: true, empresa: true } },
+        servicios: {
+          select: { tipoPago: true, seleccionado: true, precio: true },
+        },
+      },
     }),
     prisma.cliente.count(),
     prisma.servicioCatalogo.count({ where: { activo: true } }),
@@ -53,7 +62,7 @@ export default async function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
           <p className="text-muted text-sm mt-1">
-            Bienvenido al Cotizador E3
+            Bienvenido al Cotizador
           </p>
         </div>
         <Link
@@ -61,7 +70,7 @@ export default async function DashboardPage() {
           className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-medium text-sm"
         >
           <Plus className="w-4 h-4" />
-          Nueva Cotizacion
+          Nueva Cotización
         </Link>
       </div>
 
@@ -99,7 +108,7 @@ export default async function DashboardPage() {
               className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark"
             >
               <Plus className="w-4 h-4" />
-              Nueva Cotizacion
+              Nueva Cotización
             </Link>
           </div>
         ) : (

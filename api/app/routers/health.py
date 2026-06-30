@@ -28,9 +28,9 @@ async def health_check():
 @router.get("/api-info", response_model=APIInfoResponse)
 async def api_info():
     return APIInfoResponse(
-        name="Cotizador E3 API",
+        name="Cotizador API",
         version="1.0.0",
-        description="API para el sistema de cotizaciones de Consultoría E3",
+        description="API para el sistema de cotizaciones de Uriel Jareth Consulting",
         capabilities=[
             "Gestión de cotizaciones",
             "Catálogo de servicios",

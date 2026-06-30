@@ -9,11 +9,13 @@ export function NuevaCotizacionClienteButton({
   clienteEmpresa,
   clienteEmail,
   clienteTelefono,
+  clienteRfc,
 }: {
   clienteNombre: string;
   clienteEmpresa: string;
   clienteEmail: string;
   clienteTelefono: string;
+  clienteRfc: string;
 }) {
   const router = useRouter();
   const store = useCotizacionStore();
@@ -24,6 +26,7 @@ export function NuevaCotizacionClienteButton({
     store.setField("clienteEmpresa", clienteEmpresa);
     store.setField("clienteEmail", clienteEmail);
     store.setField("clienteTelefono", clienteTelefono);
+    store.setField("clienteRfc", clienteRfc);
     router.push("/cotizaciones/nueva");
   };
 
@@ -31,7 +34,7 @@ export function NuevaCotizacionClienteButton({
     <button
       onClick={handleClick}
       className="p-1.5 text-muted hover:text-primary hover:bg-primary/5 rounded transition-colors"
-      title="Nueva cotizacion"
+      title="Nueva cotización"
     >
       <Plus className="w-4 h-4" />
     </button>

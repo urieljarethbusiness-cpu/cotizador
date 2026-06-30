@@ -25,10 +25,13 @@ model Cliente {
   empresa   String?
   email     String?
   telefono  String?
+  rfc       String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   cotizaciones Cotizacion[]
+
+  @@index([nombre, empresa])
 }
 
 model Cotizacion {
@@ -43,6 +46,9 @@ model Cotizacion {
   estado            String   @default("borrador")
   incluirBonos      Boolean  @default(false)
   incluirFinanciamiento Boolean @default(false)
+  incluirIva        Boolean  @default(true)
+  esDoble           Boolean  @default(false)
+  opcionesMetadata  Json?
   observaciones     String?
   clienteId         String
   asesorId          String
@@ -53,6 +59,12 @@ model Cotizacion {
   asesor            User     @relation("AsesorCotizaciones", fields: [asesorId], references: [id])
   servicios         ServicioCotizado[]
   planBucefalo      PlanBucefaloCotizacion?
+  registrosHoras    RegistroHoras[]
+
+  @@index([clienteId])
+  @@index([asesorId])
+  @@index([estado])
+  @@index([createdAt])
 }
 
 model Categoria {
@@ -89,6 +101,8 @@ model FasePaquete {
 
   paquete    Paquete  @relation(fields: [paqueteId], references: [id], onDelete: Cascade)
   servicios  ServicioPaquete[]
+
+  @@index([paqueteId])
 }
 
 model ServicioCatalogo {
@@ -102,6 +116,7 @@ model ServicioCatalogo {
   entregablesDefault  Json     @default("[]")
   categoriaId         String?
   variante            String?
+  nivel               String?
   activo              Boolean  @default(true)
   orden               Int      @default(0)
   createdAt           DateTime @default(now())
@@ -110,6 +125,9 @@ model ServicioCatalogo {
   servicios           ServicioCotizado[]
   categoriaRel        Categoria?       @relation(fields: [categoriaId], references: [id])
   paquetes            ServicioPaquete[]
+
+  @@index([categoriaId])
+  @@index([activo, fase, orden])
 }
 
 model ServicioPaquete {
@@ -123,24 +141,37 @@ model ServicioPaquete {
   fasePaquete         FasePaquete     @relation(fields: [fasePaqueteId], references: [id], onDelete: Cascade)
 
   @@unique([servicioCatalogoId, fasePaqueteId])
+  @@index([fasePaqueteId])
 }
 
 model ServicioCotizado {
   id                 String   @id @default(cuid())
   cotizacionId       String
-  servicioCatalogoId String
+  servicioCatalogoId String?
+  nombre             String?
+  esPersonalizado    Boolean  @default(false)
+  horas              Float?
+  tarifaHora         Float?
+  modeloCobro        String   @default("fijo")
+  montoMinimo        Float?
+  horasIncluidas     Float?
+  opcion             String?
   fase               Int
   tipoPago           String
   precio             Float
   tiempoEntrega      String
   entregables        Json     @default("[]")
+  beneficios         Json     @default("[]")
   notas              String?
   seleccionado       Boolean  @default(true)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  cotizacion         Cotizacion       @relation(fields: [cotizacionId], references: [id], onDelete: Cascade)
-  servicioCatalogo   ServicioCatalogo @relation(fields: [servicioCatalogoId], references: [id])
+  cotizacion         Cotizacion        @relation(fields: [cotizacionId], references: [id], onDelete: Cascade)
+  servicioCatalogo   ServicioCatalogo? @relation(fields: [servicioCatalogoId], references: [id])
+
+  @@index([cotizacionId])
+  @@index([servicioCatalogoId])
 }
 
 model PlanBucefaloCotizacion {
@@ -153,6 +184,28 @@ model PlanBucefaloCotizacion {
   updatedAt    DateTime @updatedAt
 
   cotizacion   Cotizacion @relation(fields: [cotizacionId], references: [id], onDelete: Cascade)
+}
+
+// Registro de horas trabajadas contra una cotizacion aprobada con cobro por tiempo
+// (modeloCobro horas/retainer/demanda). Se usa para emitir notas de pago al cliente:
+// cada entrada es un dia con un rango horario, una descripcion breve y una tarifa
+// (snapshot). `horas` se calcula del rango (calcularHorasRango) y se persiste.
+model RegistroHoras {
+  id           String   @id @default(cuid())
+  cotizacionId String
+  fecha        DateTime
+  horaInicio   String
+  horaFin      String
+  horas        Float
+  tarifaHora   Float    @default(0)
+  descripcion  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  cotizacion   Cotizacion @relation(fields: [cotizacionId], references: [id], onDelete: Cascade)
+
+  @@index([cotizacionId])
+  @@index([fecha])
 }
 
 model Configuracion {

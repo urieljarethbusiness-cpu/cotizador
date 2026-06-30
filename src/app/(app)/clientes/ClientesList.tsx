@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { NuevaCotizacionClienteButton } from "./NuevaCotizacionClienteButton";
 
@@ -10,21 +10,23 @@ interface Cliente {
   empresa: string | null;
   email: string | null;
   telefono: string | null;
-  cotizaciones: { id: string }[];
+  rfc: string | null;
+  _count: { cotizaciones: number };
 }
 
 export function ClientesList({ clientes }: { clientes: Cliente[] }) {
   const [search, setSearch] = useState("");
 
-  const filtered = clientes.filter((c) => {
-    if (!search) return true;
+  const filtered = useMemo(() => {
+    if (!search) return clientes;
     const q = search.toLowerCase();
-    return (
-      c.nombre.toLowerCase().includes(q) ||
-      (c.empresa || "").toLowerCase().includes(q) ||
-      (c.email || "").toLowerCase().includes(q)
+    return clientes.filter(
+      (c) =>
+        c.nombre.toLowerCase().includes(q) ||
+        (c.empresa || "").toLowerCase().includes(q) ||
+        (c.email || "").toLowerCase().includes(q)
     );
-  });
+  }, [clientes, search]);
 
   return (
     <>
@@ -62,6 +64,9 @@ export function ClientesList({ clientes }: { clientes: Cliente[] }) {
                 <th className="text-left px-5 py-3 font-medium text-muted">
                   Telefono
                 </th>
+                <th className="text-left px-5 py-3 font-medium text-muted">
+                  RFC
+                </th>
                 <th className="text-center px-5 py-3 font-medium text-muted">
                   Cotizaciones
                 </th>
@@ -78,9 +83,10 @@ export function ClientesList({ clientes }: { clientes: Cliente[] }) {
                   <td className="px-5 py-3">{c.empresa || "-"}</td>
                   <td className="px-5 py-3 text-muted">{c.email || "-"}</td>
                   <td className="px-5 py-3 text-muted">{c.telefono || "-"}</td>
+                  <td className="px-5 py-3 text-muted">{c.rfc || "-"}</td>
                   <td className="px-5 py-3 text-center">
                     <span className="inline-block px-2 py-0.5 bg-primary-light text-primary rounded text-xs font-medium">
-                      {c.cotizaciones.length}
+                      {c._count.cotizaciones}
                     </span>
                   </td>
                   <td className="px-5 py-3 text-center">
@@ -89,6 +95,7 @@ export function ClientesList({ clientes }: { clientes: Cliente[] }) {
                       clienteEmpresa={c.empresa || ""}
                       clienteEmail={c.email || ""}
                       clienteTelefono={c.telefono || ""}
+                      clienteRfc={c.rfc || ""}
                     />
                   </td>
                 </tr>

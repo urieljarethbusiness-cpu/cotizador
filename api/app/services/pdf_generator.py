@@ -1,4 +1,4 @@
-"""PDF Generator for Cotizador E3 — port of pdf-generator.ts using ReportLab."""
+"""PDF Generator for Cotizador — port of pdf-generator.ts using ReportLab."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 
-from app.services.calculators import FASES_SHORT, PLANES_BUCEFALO, bucefalo_precio
+from app.services.calculators import FASES_SHORT, PLANES_BUCEFALO, bucefalo_precio, detalle_modelo, calcular_totales_opcion, precio_display, nota_demanda
 
 PRIMARY_DEFAULT = "#2563eb"
 DARK_DEFAULT = "#1e293b"
@@ -38,6 +38,23 @@ def _hex_to_rgb(hex_color: str) -> colors.Color:
 
 def _fmt_currency(n: float) -> str:
     return f"${n:,.2f}"
+
+
+def _wrap_text(c, text: str, font: str, size: float, max_width: float) -> list[str]:
+    """Envuelve texto en lineas que caben en max_width (respeta saltos de linea)."""
+    lines: list[str] = []
+    for paragraph in str(text or "").split("\n"):
+        words = paragraph.split()
+        line = ""
+        for word in words:
+            test = f"{line} {word}".strip()
+            if c.stringWidth(test, font, size) > max_width and line:
+                lines.append(line)
+                line = word
+            else:
+                line = test
+        lines.append(line)
+    return lines
 
 
 def _fmt_date(d: datetime) -> str:
@@ -79,7 +96,7 @@ def generate_cotizacion_pdf(data: dict[str, Any]) -> bytes:
 
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=LETTER)
-    c.setTitle(f"Cotizacion {data.get('numero', '')}")
+    c.setTitle(f"Cotización {data.get('numero', '')}")
 
     logo = _load_logo(data.get("logoBase64"), data.get("logoMime"))
 
@@ -87,6 +104,15 @@ def generate_cotizacion_pdf(data: dict[str, Any]) -> bytes:
     plan_nivel = data.get("planBucefaloNivel")
     plan_precio = data.get("planBucefaloPrecio", 0)
     incluir_bonos = data.get("incluirBonos", False)
+    # IVA: por defecto se aplica (se factura). False = proyecto sin factura, precios finales.
+    iva = data.get("incluirIva", True)
+    iva_factor = 1.16 if iva else 1
+    iva_suf = " + IVA" if iva else ""
+    iva_total_lbl = " (c/IVA)" if iva else ""
+    nota_precios = (
+        "(Precios en Moneda Nacional, no incluyen IVA)" if iva
+        else "(Precios en Moneda Nacional, no se emite factura)"
+    )
     cfg_bancaria = data.get("configBancaria") or {}
 
     # ── PAGE 1: COVER ──────────────────────────────
@@ -116,7 +142,7 @@ def generate_cotizacion_pdf(data: dict[str, Any]) -> bytes:
 
     c.setFont("Helvetica-Bold", 36)
     c.setFillColor(dark_rgb)
-    c.drawString(MARGIN_LEFT, bar_y - 40, "Cotizacion")
+    c.drawString(MARGIN_LEFT, bar_y - 40, "Cotización")
     c.setFont("Helvetica", 18)
     c.setFillColor(primary_rgb)
     c.drawString(MARGIN_LEFT, bar_y - 65, data.get("numero", ""))
@@ -128,6 +154,8 @@ def generate_cotizacion_pdf(data: dict[str, Any]) -> bytes:
     info_l = [
         ("Cliente", data.get("clienteNombre", "")),
         ("Empresa", data.get("clienteEmpresa", "")),
+        # RFC del cliente: solo se muestra si fue capturado (proyectos con factura).
+        *([("RFC", data.get("clienteRfc"))] if data.get("clienteRfc") else []),
         ("Proyecto", data.get("proyecto", "")),
         ("Asesor", data.get("asesorNombre", "")),
     ]
@@ -176,7 +204,7 @@ def generate_cotizacion_pdf(data: dict[str, Any]) -> bytes:
     c.setFont("Helvetica", 8)
     c.setFillColor(muted_rgb)
     c.drawString(MARGIN_LEFT, y, f"En atencion a: {cliente_ref}")
-    c.drawString(MARGIN_LEFT + CONTENT_W * 0.45, y, f"No. Cotizacion: {data.get('numero', '')}")
+    c.drawString(MARGIN_LEFT + CONTENT_W * 0.45, y, f"No. Cotización: {data.get('numero', '')}")
     y -= 11
     c.drawString(MARGIN_LEFT, y, f"Asesor: {data.get('asesorNombre', '')}")
     c.drawString(MARGIN_LEFT + CONTENT_W * 0.45, y, f"Fecha: {_fmt_date(data.get('fecha', datetime.now()))}  |  Moneda: {data.get('moneda', 'MXN')}")
@@ -187,24 +215,29 @@ def generate_cotizacion_pdf(data: dict[str, Any]) -> bytes:
     col_tiempo = MARGIN_LEFT + CONTENT_W - 120
     col_precio = MARGIN_LEFT + CONTENT_W - 60
 
-    # Header row
-    c.setFillColor(light_rgb)
-    c.rect(MARGIN_LEFT, y - 2, CONTENT_W, 16, fill=1, stroke=0)
-    c.setFont("Helvetica-Bold", 7)
-    c.setFillColor(dark_rgb)
-    c.drawString(col_nombre + 6, y + 3, "Servicio")
-    c.drawString(col_tipo + 4, y + 3, "Tipo")
-    c.drawString(col_tiempo + 4, y + 3, "Entrega")
-    c.drawRightString(col_precio + 60, y + 3, "Precio")
-    y -= 4
+    es_doble = bool(data.get("esDoble"))
+    opciones_meta = data.get("opcionesMetadata") or {}
 
-    c.setStrokeColor(border_rgb)
-    c.setLineWidth(0.3)
-    c.line(MARGIN_LEFT, y, MARGIN_LEFT + CONTENT_W, y)
-    y -= 14
+    def _draw_table_header(y_pos):
+        c.setFillColor(light_rgb)
+        c.rect(MARGIN_LEFT, y_pos - 2, CONTENT_W, 16, fill=1, stroke=0)
+        c.setFont("Helvetica-Bold", 7)
+        c.setFillColor(dark_rgb)
+        c.drawString(col_nombre + 6, y_pos + 3, "Servicio")
+        c.drawString(col_tipo + 4, y_pos + 3, "Tipo")
+        c.drawString(col_tiempo + 4, y_pos + 3, "Entrega")
+        c.drawRightString(col_precio + 60, y_pos + 3, "Precio")
+        y_pos -= 4
+        c.setStrokeColor(border_rgb)
+        c.setLineWidth(0.3)
+        c.line(MARGIN_LEFT, y_pos, MARGIN_LEFT + CONTENT_W, y_pos)
+        return y_pos - 14
 
-    unicos = [s for s in servicios if s.get("tipoPago") == "unico"]
-    mensuales = [s for s in servicios if s.get("tipoPago") == "mensual"]
+    # Las partidas "demanda" salen de la tabla normal y se muestran en su propio modulo.
+    demanda_servs = [s for s in servicios if s.get("modeloCobro") == "demanda"]
+    comprometidos = [s for s in servicios if s.get("modeloCobro") != "demanda"]
+    unicos = [s for s in comprometidos if s.get("tipoPago") == "unico"]
+    mensuales = [s for s in comprometidos if s.get("tipoPago") == "mensual"]
 
     def _draw_section(srv_list, tipo_label, titulo_total, y_pos):
         if not srv_list:
@@ -236,8 +269,16 @@ def generate_cotizacion_pdf(data: dict[str, Any]) -> bytes:
             c.drawString(col_tiempo + 4, y_pos - 10, serv.get("tiempoEntrega", "")[:15])
             c.setFont("Helvetica-Bold", 8)
             c.setFillColor(dark_rgb)
-            c.drawRightString(col_precio + 60, y_pos - 10, _fmt_currency(serv.get("precio", 0)))
+            # "demanda" muestra la tarifa/hr en vez de $0 (precio_display).
+            c.drawRightString(col_precio + 60, y_pos - 10, precio_display(serv))
             y_pos -= 14
+
+            detalle = detalle_modelo(serv)
+            if detalle:
+                c.setFont("Helvetica-Oblique", 6.5)
+                c.setFillColor(muted_rgb)
+                c.drawString(col_nombre + 10, y_pos - 7, detalle[:90])
+                y_pos -= 9
 
             entregables = serv.get("entregables", [])
             if entregables:
@@ -252,11 +293,20 @@ def generate_cotizacion_pdf(data: dict[str, Any]) -> bytes:
                         c.drawString(col_nombre + CONTENT_W * 0.48, y_pos - 8, f"\u2022 {e2[:50]}")
                     y_pos -= 9
 
+            # Beneficios destacados (denotan valor; util en partidas demanda sin precio).
+            beneficios = serv.get("beneficios", [])
+            for b in beneficios:
+                c.setFont("Helvetica-Bold", 6.5)
+                c.setFillColor(primary_rgb)
+                c.drawString(col_nombre + 10, y_pos - 8, f"\u00bb {b[:90]}")
+                y_pos -= 8
+
             c.setStrokeColor(_hex_to_rgb("#e5e7eb"))
             c.setLineWidth(0.2)
             c.line(col_nombre + 6, y_pos, MARGIN_LEFT + CONTENT_W, y_pos)
             y_pos -= 6
 
+        # Las partidas "demanda" llevan precio=0, no suman al total (se factura segun consumo).
         total = sum(s.get("precio", 0) for s in srv_list)
         y_pos -= 4
         c.setFillColor(_hex_to_rgb("#f8fafc"))
@@ -268,14 +318,189 @@ def generate_cotizacion_pdf(data: dict[str, Any]) -> bytes:
         y_pos -= 18
         c.setFont("Helvetica", 6)
         c.setFillColor(muted_rgb)
-        c.drawString(col_nombre + 6, y_pos, "(Precios en Moneda Nacional, no incluyen IVA)")
-        y_pos -= 14
+        c.drawString(col_nombre + 6, y_pos, nota_precios)
+        y_pos -= 11
+        nota = nota_demanda(srv_list)
+        if nota:
+            c.setFont("Helvetica-Oblique", 6.5)
+            c.setFillColor(primary_rgb)
+            c.drawString(col_nombre + 6, y_pos, nota[:140])
+            y_pos -= 11
         return y_pos
 
-    if unicos:
-        y = _draw_section(unicos, "Unico", "Total Pago Unico", y)
-    if mensuales:
-        y = _draw_section(mensuales, "Mensual", "Total Pago Mensual", y)
+    def _draw_esquema_horas(srv_list, y_pos, titulo_opcion=None):
+        """Modulo dedicado del esquema por horas: tarjeta de tarifas + beneficios + nota."""
+        if not srv_list:
+            return y_pos
+        # Estimar alto para reservar espacio (evita cortes feos de pagina).
+        estimate = 22
+        for s in srv_list:
+            estimate += 14 + len(s.get("entregables", [])) * 8 + len(s.get("beneficios", [])) * 8 + 8
+        estimate += 44
+        max_y = PAGE_H - MARGIN_BOTTOM - 5
+        if y_pos - estimate < max_y:
+            c.showPage()
+            y_pos = PAGE_H - MARGIN_TOP
+        y_pos -= 8
+        start_y = y_pos
+
+        titulo = "ESQUEMA DE TRABAJO POR HORAS" + (f" - {titulo_opcion}" if titulo_opcion else "")
+        c.setFillColor(primary_rgb)
+        c.rect(MARGIN_LEFT, y_pos - 18, CONTENT_W, 18, fill=1, stroke=0)
+        c.setFont("Helvetica-Bold", 10)
+        c.setFillColor(white_rgb)
+        c.drawString(MARGIN_LEFT + 8, y_pos - 13, titulo)
+        y_pos -= 24
+
+        for s in srv_list:
+            c.setFont("Helvetica-Bold", 9)
+            c.setFillColor(dark_rgb)
+            c.drawString(MARGIN_LEFT + 8, y_pos - 9, s.get("nombre", "")[:55])
+            c.setFont("Helvetica-Bold", 9)
+            c.setFillColor(primary_rgb)
+            c.drawRightString(MARGIN_LEFT + CONTENT_W - 8, y_pos - 9, f"{precio_display(s)}{iva_suf}")
+            y_pos -= 13
+            for e in s.get("entregables", []):
+                c.setFont("Helvetica", 6.5)
+                c.setFillColor(muted_rgb)
+                c.drawString(MARGIN_LEFT + 16, y_pos - 8, f"• {e[:95]}")
+                y_pos -= 8
+            for b in s.get("beneficios", []):
+                c.setFont("Helvetica-Bold", 6.5)
+                c.setFillColor(primary_rgb)
+                c.drawString(MARGIN_LEFT + 16, y_pos - 8, f"» {b[:95]}")
+                y_pos -= 8
+            c.setStrokeColor(_hex_to_rgb("#e5e7eb"))
+            c.setLineWidth(0.2)
+            c.line(MARGIN_LEFT + 8, y_pos - 1, MARGIN_LEFT + CONTENT_W - 8, y_pos - 1)
+            y_pos -= 9
+
+        # Fila tipo total: facturacion segun consumo.
+        c.setFillColor(_hex_to_rgb("#f8fafc"))
+        c.rect(MARGIN_LEFT, y_pos - 2, CONTENT_W, 18, fill=1, stroke=0)
+        c.setFont("Helvetica-Bold", 8.5)
+        c.setFillColor(primary_rgb)
+        c.drawString(MARGIN_LEFT + 8, y_pos + 3, "Total mensual")
+        c.drawRightString(MARGIN_LEFT + CONTENT_W - 8, y_pos + 3, "Segun consumo")
+        y_pos -= 21
+
+        nota = "Facturacion a fin de mes segun las horas efectivamente consumidas. No requiere anticipo. Precios en MXN" + (", no incluyen IVA." if iva else ", no se emite factura.")
+        c.setFont("Helvetica-Oblique", 6.5)
+        c.setFillColor(muted_rgb)
+        for line in _wrap_text(c, nota, "Helvetica-Oblique", 6.5, CONTENT_W - 16):
+            c.drawString(MARGIN_LEFT + 8, y_pos, line)
+            y_pos -= 9
+        y_pos -= 4
+
+        # Borde exterior (efecto tarjeta).
+        c.setStrokeColor(primary_rgb)
+        c.setLineWidth(0.6)
+        c.rect(MARGIN_LEFT, y_pos, CONTENT_W, start_y - y_pos, fill=0, stroke=1)
+        y_pos -= 12
+        return y_pos
+
+    def _draw_opcion_header(op, y_pos):
+        meta = opciones_meta.get(op) or {}
+        max_y = PAGE_H - MARGIN_BOTTOM - 5
+        if y_pos - 30 < max_y:
+            c.showPage()
+            y_pos = PAGE_H - MARGIN_TOP
+        titulo = meta.get("titulo")
+        c.setFillColor(primary_rgb)
+        c.rect(MARGIN_LEFT, y_pos - 18, CONTENT_W, 18, fill=1, stroke=0)
+        c.setFont("Helvetica-Bold", 10)
+        c.setFillColor(white_rgb)
+        c.drawString(MARGIN_LEFT + 8, y_pos - 13, f"OPCION {op}" + (f": {titulo}" if titulo else ""))
+        y_pos -= 24
+        desc = meta.get("descripcion")
+        if desc:
+            c.setFont("Helvetica", 7.5)
+            c.setFillColor(dark_rgb)
+            for line in _wrap_text(c, desc, "Helvetica", 7.5, CONTENT_W - 12):
+                c.drawString(MARGIN_LEFT + 6, y_pos - 8, line)
+                y_pos -= 10
+            y_pos -= 2
+        no_incluye = meta.get("noIncluye")
+        if no_incluye:
+            c.setFont("Helvetica-Oblique", 7)
+            c.setFillColor(muted_rgb)
+            for line in _wrap_text(c, f"No incluye: {no_incluye}", "Helvetica-Oblique", 7, CONTENT_W - 12):
+                c.drawString(MARGIN_LEFT + 6, y_pos - 8, line)
+                y_pos -= 10
+            y_pos -= 4
+        return y_pos
+
+    def _draw_comparativa(y_pos):
+        t1 = calcular_totales_opcion(servicios, "1")
+        t2 = calcular_totales_opcion(servicios, "2")
+        max_y = PAGE_H - MARGIN_BOTTOM - 5
+        if y_pos - 90 < max_y:
+            c.showPage()
+            y_pos = PAGE_H - MARGIN_TOP
+        y_pos -= 6
+        c.setFillColor(primary_rgb)
+        c.rect(MARGIN_LEFT, y_pos - 10, 3, 10, fill=1, stroke=0)
+        c.setFont("Helvetica-Bold", 10)
+        c.setFillColor(dark_rgb)
+        c.drawString(MARGIN_LEFT + 10, y_pos - 8, "Comparativa de opciones")
+        y_pos -= 22
+        c_label = MARGIN_LEFT
+        c_op1 = MARGIN_LEFT + CONTENT_W * 0.45
+        c_op2 = MARGIN_LEFT + CONTENT_W * 0.72
+        t1_tit = (opciones_meta.get("1") or {}).get("titulo")
+        t2_tit = (opciones_meta.get("2") or {}).get("titulo")
+        c.setFillColor(light_rgb)
+        c.rect(MARGIN_LEFT, y_pos - 2, CONTENT_W, 16, fill=1, stroke=0)
+        c.setFont("Helvetica-Bold", 7.5)
+        c.setFillColor(dark_rgb)
+        c.drawString(c_label + 6, y_pos + 3, "Concepto")
+        c.drawString(c_op1, y_pos + 3, f"Opcion 1" + (f" - {t1_tit}" if t1_tit else ""))
+        c.drawString(c_op2, y_pos + 3, f"Opcion 2" + (f" - {t2_tit}" if t2_tit else ""))
+        y_pos -= 18
+        op1_dem = any(s.get("modeloCobro") == "demanda" and s.get("opcion") in ("1", "ambas") for s in servicios)
+        op2_dem = any(s.get("modeloCobro") == "demanda" and s.get("opcion") in ("2", "ambas") for s in servicios)
+        mens1 = "Segun consumo" if t1["totalMensual"] == 0 and op1_dem else _fmt_currency(t1["totalMensual"] * iva_factor)
+        mens2 = "Segun consumo" if t2["totalMensual"] == 0 and op2_dem else _fmt_currency(t2["totalMensual"] * iva_factor)
+        filas = [
+            (f"Total unico{iva_total_lbl}", _fmt_currency(t1["totalUnico"] * iva_factor), _fmt_currency(t2["totalUnico"] * iva_factor)),
+            (f"Total mensual{iva_total_lbl}", mens1, mens2),
+            ("Horas estimadas", f"{t1['horas']:g} h", f"{t2['horas']:g} h"),
+        ]
+        for lab, v1, v2 in filas:
+            c.setFont("Helvetica", 8)
+            c.setFillColor(dark_rgb)
+            c.drawString(c_label + 6, y_pos - 8, lab)
+            c.setFont("Helvetica-Bold", 8)
+            c.drawString(c_op1, y_pos - 8, v1)
+            c.drawString(c_op2, y_pos - 8, v2)
+            c.setStrokeColor(_hex_to_rgb("#e5e7eb"))
+            c.setLineWidth(0.2)
+            c.line(c_label + 6, y_pos - 12, MARGIN_LEFT + CONTENT_W, y_pos - 12)
+            y_pos -= 14
+        return y_pos - 8
+
+    if es_doble:
+        for op in ("1", "2"):
+            y = _draw_opcion_header(op, y)
+            u = [s for s in unicos if s.get("opcion") in (op, "ambas")]
+            me = [s for s in mensuales if s.get("opcion") in (op, "ambas")]
+            dem = [s for s in demanda_servs if s.get("opcion") in (op, "ambas")]
+            if u or me:
+                y = _draw_table_header(y)
+                if u:
+                    y = _draw_section(u, "Unico", f"Total Pago Unico - Opcion {op}", y)
+                if me:
+                    y = _draw_section(me, "Mensual", f"Total Pago Mensual - Opcion {op}", y)
+            y = _draw_esquema_horas(dem, y)
+        y = _draw_comparativa(y)
+    else:
+        if unicos or mensuales:
+            y = _draw_table_header(y)
+            if unicos:
+                y = _draw_section(unicos, "Unico", "Total Pago Unico", y)
+            if mensuales:
+                y = _draw_section(mensuales, "Mensual", "Total Pago Mensual", y)
+        y = _draw_esquema_horas(demanda_servs, y)
 
     if plan_nivel:
         label = plan_nivel.capitalize()
@@ -356,7 +581,7 @@ def generate_cotizacion_pdf(data: dict[str, Any]) -> bytes:
         return yy - 8
 
     y = _draw_bullets("Condiciones", [
-        "Esta cotizacion tiene una vigencia de 15 dias habiles.",
+        "Esta cotización tiene una vigencia de 15 dias habiles.",
         "Cualquier ajuste al proyecto despues de la aprobacion del contenido afectara la fecha de entrega y por consiguiente el costo.",
         "El cliente debera proporcionar la informacion solicitada por Uriel Jareth Consulting en tiempo y forma.",
         "Si la falta de informacion provoca un excedente en los plazos de entrega del proyecto, las horas adicionales de servicio se cotizaran por separado.",
@@ -375,7 +600,7 @@ def generate_cotizacion_pdf(data: dict[str, Any]) -> bytes:
     y = _draw_bullets("Notas", [
         "El presente proyecto debera tener un responsable oficial.",
         "La Hora Centinela tiene un precio de $700.00 MXN.",
-        "Los archivos editables/fuente (AI, PSD) son propiedad intelectual de la agencia. Si requiere los archivos editables, estos pueden ser adquiridos abonando una tarifa de liberacion (buy-out fee).",
+        "Los archivos editables/fuente (AI, PSD) son propiedad intelectual de Uriel Jareth Consulting. Si requiere los archivos editables, estos pueden ser adquiridos abonando una tarifa de liberacion (buy-out fee).",
         "Si el proyecto se pausa por razones ajenas a Uriel Jareth Consulting, esto generara costo extra del 15% al 30% para retomar el proyecto.",
     ], y)
 
@@ -406,7 +631,10 @@ def generate_cotizacion_pdf(data: dict[str, Any]) -> bytes:
     if clabe_nac:
         c.drawString(MARGIN_LEFT + CONTENT_W * 0.45, y - 24, f"CLABE: {clabe_nac}")
     c.drawString(MARGIN_LEFT + 8, y - 35, f"Razon Social: {razon_social}")
-    c.drawString(MARGIN_LEFT + CONTENT_W * 0.45, y - 35, f"RFC: {rfc}")
+    # RFC del emisor: solo en proyectos con factura (incluirIva). En proyectos
+    # sin factura se omite para no exponer datos fiscales innecesarios.
+    if iva:
+        c.drawString(MARGIN_LEFT + CONTENT_W * 0.45, y - 35, f"RFC: {rfc}")
     if banco_nac:
         c.drawString(MARGIN_LEFT + 8, y - 46, f"Banco: {banco_nac}")
     y -= box_h + 8

@@ -8,7 +8,7 @@ export function ListDeleteButton({ id }: { id: string }) {
   const router = useRouter();
 
   const handleDelete = async () => {
-    if (!confirm("Eliminar esta cotizacion?")) return;
+    if (!confirm("Eliminar esta cotización?")) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/cotizaciones/${id}`, { method: "DELETE" });

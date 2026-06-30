@@ -5,7 +5,15 @@ export const dynamic = "force-dynamic";
 export default async function ClientesPage() {
   const clientes = await prisma.cliente.findMany({
     orderBy: { createdAt: "desc" },
-    include: { cotizaciones: { select: { id: true } } },
+    select: {
+      id: true,
+      nombre: true,
+      empresa: true,
+      email: true,
+      telefono: true,
+      rfc: true,
+      _count: { select: { cotizaciones: true } },
+    },
   });
 
   return (
@@ -44,7 +52,8 @@ function ClientesListWrapper({
     empresa: string | null;
     email: string | null;
     telefono: string | null;
-    cotizaciones: { id: string }[];
+    rfc: string | null;
+    _count: { cotizaciones: number };
   }[];
 }) {
   return <ClientesList clientes={clientes} />;

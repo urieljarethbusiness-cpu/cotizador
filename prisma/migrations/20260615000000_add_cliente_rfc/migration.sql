@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Cliente" ADD COLUMN IF NOT EXISTS "rfc" TEXT;

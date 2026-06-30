@@ -6,14 +6,12 @@ import {
   Pencil,
   Trash2,
   X,
-  Check,
   ChevronDown,
   ChevronRight,
   Loader2,
   Package,
   LayoutGrid,
   Settings,
-  GripVertical,
   Save,
   FileDown,
   Upload,
@@ -34,6 +32,7 @@ interface Servicio {
   categoriaNombre: string;
   categoriaColor: string;
   variante: string | null;
+  nivel: string | null;
   activo: boolean;
   orden: number;
 }
@@ -51,7 +50,7 @@ interface FasePaqueteUI {
   id: string;
   nombre: string;
   orden: number;
-  servicios: { id: string; nombre: string; precioBase: number; tipoPago: string }[];
+  servicios: { id: string; nombre: string; precioBase: number; tipoPago: string; nivel: string | null }[];
 }
 
 interface PaqueteUI {
@@ -309,33 +308,36 @@ export function CatalogoClient({ initialServicios, initialCategorias, initialPaq
                   <span className="text-xs text-muted">({catServs.length})</span>
                 </div>
                 <div className="bg-card-bg rounded-xl border border-border overflow-hidden">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-sm table-fixed">
                     <thead>
                       <tr className="border-b border-border bg-gray-50">
                         <th className="text-left px-4 py-3 font-medium text-muted">Servicio</th>
-                        <th className="text-left px-4 py-3 font-medium text-muted">Tipo</th>
-                        <th className="text-left px-4 py-3 font-medium text-muted">Tiempo</th>
-                        <th className="text-right px-4 py-3 font-medium text-muted">Precio</th>
-                        <th className="text-center px-4 py-3 font-medium text-muted">Entregables</th>
+                        <th className="text-left px-4 py-3 font-medium text-muted w-28">Tipo</th>
+                        <th className="text-left px-4 py-3 font-medium text-muted w-32">Tiempo</th>
+                        <th className="text-right px-4 py-3 font-medium text-muted w-32">Precio</th>
+                        <th className="text-center px-4 py-3 font-medium text-muted w-28">Entregables</th>
                         <th className="text-center px-4 py-3 font-medium text-muted w-24">Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
                       {catServs.map((s) => (
                         <tr key={s.id} className={clsx("border-b border-border hover:bg-gray-50", !s.activo && "opacity-50")}>
-                          <td className="px-4 py-3">
-                            <div className="font-medium">{s.nombre}</div>
-                            {s.descripcion && <div className="text-xs text-muted mt-0.5">{s.descripcion}</div>}
+                          <td className="px-4 py-3 align-top">
+                            <div className="font-medium flex flex-wrap items-center gap-2 min-w-0">
+                              <span className="break-words">{s.nombre}</span>
+                              {s.nivel && <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700">{s.nivel}</span>}
+                            </div>
+                            {s.descripcion && <div className="text-xs text-muted mt-0.5 break-words">{s.descripcion}</div>}
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-3 align-top">
                             <span className={clsx("inline-block px-2 py-0.5 rounded text-xs font-medium", s.tipoPago === "unico" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700")}>
                               {s.tipoPago === "unico" ? "Unico" : "Mensual"}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-muted text-xs">{s.tiempoEntrega}</td>
-                          <td className="px-4 py-3 text-right font-medium">{formatCurrency(s.precioBase)}</td>
-                          <td className="px-4 py-3 text-center text-muted">{s.entregablesDefault.length}</td>
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-3 text-muted text-xs align-top">{s.tiempoEntrega}</td>
+                          <td className="px-4 py-3 text-right font-medium align-top">{formatCurrency(s.precioBase)}</td>
+                          <td className="px-4 py-3 text-center text-muted align-top">{s.entregablesDefault.length}</td>
+                          <td className="px-4 py-3 align-top">
                             <div className="flex items-center justify-center gap-1">
                               <button onClick={() => setServicioModal(s)} className="p-1.5 text-muted hover:text-primary rounded" title="Editar">
                                 <Pencil className="w-3.5 h-3.5" />
@@ -402,7 +404,7 @@ export function CatalogoClient({ initialServicios, initialCategorias, initialPaq
             return (
               <div key={pk.id} className="bg-card-bg rounded-xl border border-border overflow-hidden">
                 <div
-                  onClick={() => setExpandedPk((prev) => { const n = new Set(prev); n.has(pk.id) ? n.delete(pk.id) : n.add(pk.id); return n; })}
+                  onClick={() => setExpandedPk((prev) => { const n = new Set(prev); if (n.has(pk.id)) n.delete(pk.id); else n.add(pk.id); return n; })}
                   className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-gray-50 cursor-pointer"
                 >
                   {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
@@ -433,20 +435,23 @@ export function CatalogoClient({ initialServicios, initialCategorias, initialPaq
                           </div>
                         </div>
                         {fase.servicios.length > 0 ? (
-                          <table className="w-full text-sm">
+                          <table className="w-full text-sm table-fixed">
                             <tbody>
                               {fase.servicios.map((s) => (
                                 <tr key={s.id} className="border-t border-border">
-                                  <td className="px-4 py-2">
-                                    <div className="font-medium">{s.nombre}</div>
+                                  <td className="px-4 py-2 align-top">
+                                    <div className="font-medium flex flex-wrap items-center gap-2 min-w-0">
+                                      <span className="break-words">{s.nombre}</span>
+                                      {s.nivel && <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700">{s.nivel}</span>}
+                                    </div>
                                   </td>
-                                  <td className="px-4 py-2">
+                                  <td className="px-4 py-2 align-top w-28">
                                     <span className={clsx("text-xs px-2 py-0.5 rounded", s.tipoPago === "unico" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700")}>
                                       {s.tipoPago === "unico" ? "Unico" : "Mensual"}
                                     </span>
                                   </td>
-                                  <td className="px-4 py-2 text-right font-medium text-sm">{formatCurrency(s.precioBase)}</td>
-                                  <td className="px-4 py-2 w-10">
+                                  <td className="px-4 py-2 text-right font-medium text-sm align-top w-32">{formatCurrency(s.precioBase)}</td>
+                                  <td className="px-4 py-2 w-10 align-top">
                                     <button onClick={() => removeServFromFase(pk.id, fase.id, s.id)} className="text-muted hover:text-red-500">
                                       <X className="w-4 h-4" />
                                     </button>
@@ -633,6 +638,7 @@ function ServicioFormModal({
     tiempoEntrega: servicio?.tiempoEntrega || "4 - 10 dias",
     entregablesDefault: servicio?.entregablesDefault?.join("\n") || "",
     variante: servicio?.variante || "",
+    nivel: servicio?.nivel || "",
     fase: servicio?.fase ?? 1,
     orden: servicio?.orden ?? 0,
     activo: servicio?.activo ?? true,
@@ -647,7 +653,6 @@ function ServicioFormModal({
         .split("\n")
         .map((e) => e.trim())
         .filter(Boolean);
-      const cat = categorias.find((c) => c.id === form.categoriaId);
       await onSave({
         nombre: form.nombre.trim(),
         descripcion: form.descripcion.trim() || null,
@@ -657,6 +662,7 @@ function ServicioFormModal({
         tiempoEntrega: form.tiempoEntrega,
         entregablesDefault: entregables,
         variante: form.variante.trim() || null,
+        nivel: form.nivel.trim() || null,
         fase: form.fase,
         orden: form.orden,
         activo: form.activo,
@@ -720,7 +726,17 @@ function ServicioFormModal({
             <label className="block text-sm font-medium mb-1">Entregables (uno por linea)</label>
             <textarea value={form.entregablesDefault} onChange={(e) => update("entregablesDefault", e.target.value)} rows={4} placeholder="Entregable 1&#10;Entregable 2&#10;..." className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none font-mono text-xs" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Nivel</label>
+              <select value={form.nivel} onChange={(e) => update("nivel", e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white">
+                <option value="">Sin nivel</option>
+                <option value="Emprendedor">Emprendedor</option>
+                <option value="PYME">PYME</option>
+                <option value="Empresario">Empresario</option>
+                <option value="Corporativo">Corporativo</option>
+              </select>
+            </div>
             <div>
               <label className="block text-sm font-medium mb-1">Variante</label>
               <input type="text" value={form.variante} onChange={(e) => update("variante", e.target.value)} placeholder="Ej: WooCommerce, Shopify..." className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />

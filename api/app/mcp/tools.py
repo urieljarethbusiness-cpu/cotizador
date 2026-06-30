@@ -7,7 +7,7 @@ TOOLS = [
     {
         "name": "buscar_servicios",
         "description": (
-            "Busca servicios del catálogo de marketing digital de Consultoría E3. "
+            "Busca servicios del catálogo de marketing digital de Uriel Jareth Consulting. "
             "Útil cuando el cliente pregunta por servicios disponibles, precios, o por fase del proyecto. "
             "Las fases son: 0=Auditoría (diagnóstico inicial), 1=Setup (infraestructura y configuración), "
             "2=Publicidad (anuncios y manejo de redes), 3=Contenido/SEO (producción de contenido y posicionamiento). "
@@ -45,7 +45,10 @@ TOOLS = [
             "Incluye servicios del catálogo con precios personalizables, plan CRM Bucefalo opcional, "
             "y configuración de moneda y esquema de pago. "
             "La cotización se crea en estado 'borrador'. "
-            "Precios CRM Bucefalo: basico=$1,000/mes, estandar=$3,500/mes, premium=$4,500/mes, empresarial=$7,500/mes."
+            "Precios CRM Bucefalo: basico=$1,000/mes, estandar=$3,500/mes, premium=$4,500/mes, empresarial=$7,500/mes. "
+            "Soporta DOBLE PROPUESTA: con es_doble=true se presentan dos opciones comparables; cada servicio "
+            "se asigna a la opción '1', '2' o 'ambas' (compartido), y opciones_metadata define el título, "
+            "descripción y exclusiones de cada opción."
         ),
         "inputSchema": {
             "type": "object",
@@ -57,6 +60,7 @@ TOOLS = [
                         "empresa": {"type": "string", "description": "Nombre de la empresa (opcional)"},
                         "email": {"type": "string", "description": "Email de contacto"},
                         "telefono": {"type": "string", "description": "Teléfono de contacto"},
+                        "rfc": {"type": "string", "description": "RFC del cliente (opcional, solo si se facturará)"},
                     },
                     "required": ["nombre"],
                 },
@@ -67,10 +71,23 @@ TOOLS = [
                         "properties": {
                             "servicio_id": {"type": "string", "description": "ID del servicio del catálogo (obtener con buscar_servicios)"},
                             "precio_personalizado": {"type": "number", "description": "Precio personalizado (opcional, usa precio base si no se especifica)"},
+                            "opcion": {"type": "string", "enum": ["1", "2", "ambas"], "description": "Solo en doble propuesta: opción a la que pertenece el servicio ('ambas' = compartido). Default 'ambas'."},
                         },
                         "required": ["servicio_id"],
                     },
                     "description": "Lista de servicios a incluir en la cotización",
+                },
+                "es_doble": {
+                    "type": "boolean",
+                    "description": "Si es true, la cotización presenta dos opciones comparables (doble propuesta).",
+                },
+                "opciones_metadata": {
+                    "type": "object",
+                    "description": "Solo en doble propuesta. Metadatos por opción, p.ej. {\"1\": {\"titulo\": \"...\", \"descripcion\": \"...\", \"noIncluye\": \"...\"}, \"2\": {...}}.",
+                    "properties": {
+                        "1": {"type": "object", "properties": {"titulo": {"type": "string"}, "descripcion": {"type": "string"}, "noIncluye": {"type": "string"}}},
+                        "2": {"type": "object", "properties": {"titulo": {"type": "string"}, "descripcion": {"type": "string"}, "noIncluye": {"type": "string"}}},
+                    },
                 },
                 "plan_bucefalo": {
                     "type": "string",
@@ -88,7 +105,7 @@ TOOLS = [
                 },
                 "esquema_pago": {
                     "type": "string",
-                    "enum": ["Pago Unico", "Mensual", "Pago Unico/Mensual"],
+                    "enum": ["Pago Unico", "Mensual", "Pago Unico/Mensual", "Por hora (postpago)"],
                     "description": "Esquema de pago (default: Pago Unico/Mensual)",
                 },
             },
@@ -224,7 +241,7 @@ TOOLS = [
     {
         "name": "obtener_configuracion",
         "description": (
-            "Obtiene la configuración de la empresa Consultoría E3: "
+            "Obtiene la configuración de la empresa Uriel Jareth Consulting: "
             "razón social, RFC, domicilio fiscal, datos bancarios (cuenta nacional, CLABE, cuenta internacional, SWIFT), "
             "colores de marca, logo, y términos y condiciones. "
             "Útil para generar documentos o verificar información fiscal."
@@ -260,7 +277,7 @@ RESOURCES = [
         "uri": "cotizador://servicios",
         "name": "Catálogo de Servicios",
         "description": (
-            "Lista completa de servicios de marketing digital de Consultoría E3 organizados por fase: "
+            "Lista completa de servicios de marketing digital de Uriel Jareth Consulting organizados por fase: "
             "Fase 0 (Auditorías), Fase 1 (Setup/Infraestructura), Fase 2 (Publicidad/Manejo), "
             "Fase 3 (Contenido/SEO). Cada servicio incluye nombre, descripción, precio base, "
             "tiempo de entrega, tipo de pago (único/mensual), y entregables."
@@ -280,7 +297,7 @@ RESOURCES = [
         "uri": "cotizador://configuracion",
         "name": "Configuración de la Empresa",
         "description": (
-            "Datos fiscales, bancarios y de marca de Consultoría E3. "
+            "Datos fiscales, bancarios y de marca de Uriel Jareth Consulting. "
             "Incluye razón social, RFC, domicilio fiscal, cuentas bancarias nacionales e internacionales, "
             "colores de marca, logo, y términos y condiciones."
         ),

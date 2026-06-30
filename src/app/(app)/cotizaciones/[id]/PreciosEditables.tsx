@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { formatCurrency, IVA_RATE } from "@/lib/calculators";
+import { formatCurrency, precioDisplay, IVA_RATE } from "@/lib/calculators";
 
 interface ServicioItem {
   id: string;
   nombre: string;
   precio: number;
+  modeloCobro?: string | null;
+  tarifaHora?: number | null;
 }
 
 interface PreciosEditablesProps {
@@ -56,6 +58,33 @@ export function PreciosEditables({
     }
   };
 
+  // Las partidas "bajo demanda" no tienen un precio fijo (se facturan por consumo):
+  // su monto guardado es 0 y lo relevante es la tarifa por hora cotizada, que se
+  // muestra como texto en vez de un input editable de precio.
+  const renderFila = (s: ServicioItem, tipo: "unico" | "mensual") => (
+    <div key={s.id} className="flex items-center justify-between text-sm gap-2">
+      <span className="flex-1 truncate">{s.nombre}</span>
+      <div className="flex items-center gap-1 shrink-0">
+        {s.modeloCobro === "demanda" ? (
+          <span className="text-muted">{precioDisplay(s)}</span>
+        ) : (
+          <>
+            <span className="text-muted text-xs">$</span>
+            <input
+              type="number"
+              value={s.precio}
+              onChange={(e) =>
+                handlePrecioChange(s.id, parseFloat(e.target.value) || 0, tipo)
+              }
+              className={INPUT_CLS}
+            />
+            {saving === s.id && <span className="text-xs text-muted">...</span>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
       <div className="bg-card-bg rounded-xl border border-border">
@@ -67,25 +96,7 @@ export function PreciosEditables({
             <p className="text-muted text-sm">Sin servicios</p>
           ) : (
             <div className="space-y-2">
-              {unicos.map((s) => (
-                <div key={s.id} className="flex items-center justify-between text-sm gap-2">
-                  <span className="flex-1 truncate">{s.nombre}</span>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <span className="text-muted text-xs">$</span>
-                    <input
-                      type="number"
-                      value={s.precio}
-                      onChange={(e) =>
-                        handlePrecioChange(s.id, parseFloat(e.target.value) || 0, "unico")
-                      }
-                      className={INPUT_CLS}
-                    />
-                    {saving === s.id && (
-                      <span className="text-xs text-muted">...</span>
-                    )}
-                  </div>
-                </div>
-              ))}
+              {unicos.map((s) => renderFila(s, "unico"))}
             </div>
           )}
           <div className="border-t border-border mt-3 pt-3 space-y-1">
@@ -115,25 +126,7 @@ export function PreciosEditables({
             <p className="text-muted text-sm">Sin servicios</p>
           ) : (
             <div className="space-y-2">
-              {mensuales.map((s) => (
-                <div key={s.id} className="flex items-center justify-between text-sm gap-2">
-                  <span className="flex-1 truncate">{s.nombre}</span>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <span className="text-muted text-xs">$</span>
-                    <input
-                      type="number"
-                      value={s.precio}
-                      onChange={(e) =>
-                        handlePrecioChange(s.id, parseFloat(e.target.value) || 0, "mensual")
-                      }
-                      className={INPUT_CLS}
-                    />
-                    {saving === s.id && (
-                      <span className="text-xs text-muted">...</span>
-                    )}
-                  </div>
-                </div>
-              ))}
+              {mensuales.map((s) => renderFila(s, "mensual"))}
             </div>
           )}
           <div className="border-t border-border mt-3 pt-3 space-y-1">

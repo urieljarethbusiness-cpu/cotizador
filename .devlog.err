@@ -1,0 +1,517 @@
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[browser] ./src/app/api/export/excel/[id]/route.ts:5:1
+Module not found: Can't resolve '@/lib/excel-builder'
+  3 | import { getConfigBranding, getConfigBancaria } from "@/lib/config-helpers";
+  4 | import { sanitizeFilename } from "@/lib/calculators";
+> 5 | import { buildCotizacionExcel, type ExcelData } from "@/lib/excel-builder";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 |
+  7 | export async function GET(
+  8 |   request: NextRequest,
+
+Import map: aliased to relative './src/lib/excel-builder' inside of [project]/
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./src/app/api/export/excel/[id]/route.ts:5:1
+Module not found: Can't resolve '@/lib/excel-builder'
+  3 | import { getConfigBranding, getConfigBancaria } from "@/lib/config-helpers";
+  4 | import { sanitizeFilename } from "@/lib/calculators";
+> 5 | import { buildCotizacionExcel, type ExcelData } from "@/lib/excel-builder";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 |
+  7 | export async function GET(
+  8 |   request: NextRequest,
+
+Import map: aliased to relative './src/lib/excel-builder' inside of [project]/
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./src/app/api/export/excel/[id]/route.ts:5:1
+Module not found: Can't resolve '@/lib/excel-builder'
+  3 | import { getConfigBranding, getConfigBancaria } from "@/lib/config-helpers";
+  4 | import { sanitizeFilename } from "@/lib/calculators";
+> 5 | import { buildCotizacionExcel, type ExcelData } from "@/lib/excel-builder";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 |
+  7 | export async function GET(
+  8 |   request: NextRequest,
+
+Import map: aliased to relative './src/lib/excel-builder' inside of [project]/
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./src/app/api/export/excel/[id]/route.ts:5:1
+Module not found: Can't resolve '@/lib/excel-builder'
+  3 | import { getConfigBranding, getConfigBancaria } from "@/lib/config-helpers";
+  4 | import { sanitizeFilename } from "@/lib/calculators";
+> 5 | import { buildCotizacionExcel, type ExcelData } from "@/lib/excel-builder";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 |
+  7 | export async function GET(
+  8 |   request: NextRequest,
+
+Import map: aliased to relative './src/lib/excel-builder' inside of [project]/
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./src/app/api/export/excel/[id]/route.ts:5:1
+Module not found: Can't resolve '@/lib/excel-builder'
+  3 | import { getConfigBranding, getConfigBancaria } from "@/lib/config-helpers";
+  4 | import { sanitizeFilename } from "@/lib/calculators";
+> 5 | import { buildCotizacionExcel, type ExcelData } from "@/lib/excel-builder";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 |
+  7 | export async function GET(
+  8 |   request: NextRequest,
+
+Import map: aliased to relative './src/lib/excel-builder' inside of [project]/
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./src/app/api/export/excel/[id]/route.ts:5:1
+Module not found: Can't resolve '@/lib/excel-builder'
+  3 | import { getConfigBranding, getConfigBancaria } from "@/lib/config-helpers";
+  4 | import { sanitizeFilename } from "@/lib/calculators";
+> 5 | import { buildCotizacionExcel, type ExcelData } from "@/lib/excel-builder";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 |
+  7 | export async function GET(
+  8 |   request: NextRequest,
+
+Import map: aliased to relative './src/lib/excel-builder' inside of [project]/
+
+https://nextjs.org/docs/messages/module-not-found 
+(node:24640) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[browser] ./src/app/api/export/excel/[id]/route.ts:5:1
+Module not found: Can't resolve '@/lib/excel-builder'
+  3 | import { getConfigBranding, getConfigBancaria } from "@/lib/config-helpers";
+  4 | import { sanitizeFilename } from "@/lib/calculators";
+> 5 | import { buildCotizacionExcel, type ExcelData } from "@/lib/excel-builder";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 |
+  7 | export async function GET(
+  8 |   request: NextRequest,
+
+Import map: aliased to relative './src/lib/excel-builder' inside of [project]/
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./src/app/api/export/excel/[id]/route.ts:5:1
+Module not found: Can't resolve '@/lib/excel-builder'
+  3 | import { getConfigBranding, getConfigBancaria } from "@/lib/config-helpers";
+  4 | import { sanitizeFilename } from "@/lib/calculators";
+> 5 | import { buildCotizacionExcel, type ExcelData } from "@/lib/excel-builder";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 |
+  7 | export async function GET(
+  8 |   request: NextRequest,
+
+Import map: aliased to relative './src/lib/excel-builder' inside of [project]/
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./src/app/api/export/excel/[id]/route.ts:5:1
+Module not found: Can't resolve '@/lib/excel-builder'
+  3 | import { getConfigBranding, getConfigBancaria } from "@/lib/config-helpers";
+  4 | import { sanitizeFilename } from "@/lib/calculators";
+> 5 | import { buildCotizacionExcel, type ExcelData } from "@/lib/excel-builder";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 |
+  7 | export async function GET(
+  8 |   request: NextRequest,
+
+Import map: aliased to relative './src/lib/excel-builder' inside of [project]/
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./src/app/api/export/excel/[id]/route.ts:5:1
+Module not found: Can't resolve '@/lib/excel-builder'
+  3 | import { getConfigBranding, getConfigBancaria } from "@/lib/config-helpers";
+  4 | import { sanitizeFilename } from "@/lib/calculators";
+> 5 | import { buildCotizacionExcel, type ExcelData } from "@/lib/excel-builder";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 |
+  7 | export async function GET(
+  8 |   request: NextRequest,
+
+Import map: aliased to relative './src/lib/excel-builder' inside of [project]/
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./src/app/api/export/excel/[id]/route.ts:5:1
+Module not found: Can't resolve '@/lib/excel-builder'
+  3 | import { getConfigBranding, getConfigBancaria } from "@/lib/config-helpers";
+  4 | import { sanitizeFilename } from "@/lib/calculators";
+> 5 | import { buildCotizacionExcel, type ExcelData } from "@/lib/excel-builder";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 |
+  7 | export async function GET(
+  8 |   request: NextRequest,
+
+Import map: aliased to relative './src/lib/excel-builder' inside of [project]/
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./src/app/api/export/excel/[id]/route.ts:5:1
+Module not found: Can't resolve '@/lib/excel-builder'
+  3 | import { getConfigBranding, getConfigBancaria } from "@/lib/config-helpers";
+  4 | import { sanitizeFilename } from "@/lib/calculators";
+> 5 | import { buildCotizacionExcel, type ExcelData } from "@/lib/excel-builder";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 |
+  7 | export async function GET(
+  8 |   request: NextRequest,
+
+Import map: aliased to relative './src/lib/excel-builder' inside of [project]/
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./src/app/api/export/excel/[id]/route.ts:5:1
+Module not found: Can't resolve '@/lib/excel-builder'
+  3 | import { getConfigBranding, getConfigBancaria } from "@/lib/config-helpers";
+  4 | import { sanitizeFilename } from "@/lib/calculators";
+> 5 | import { buildCotizacionExcel, type ExcelData } from "@/lib/excel-builder";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 |
+  7 | export async function GET(
+  8 |   request: NextRequest,
+
+Import map: aliased to relative './src/lib/excel-builder' inside of [project]/
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./src/app/api/export/excel/[id]/route.ts:5:1
+Module not found: Can't resolve '@/lib/excel-builder'
+  3 | import { getConfigBranding, getConfigBancaria } from "@/lib/config-helpers";
+  4 | import { sanitizeFilename } from "@/lib/calculators";
+> 5 | import { buildCotizacionExcel, type ExcelData } from "@/lib/excel-builder";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  6 |
+  7 | export async function GET(
+  8 |   request: NextRequest,
+
+Import map: aliased to relative './src/lib/excel-builder' inside of [project]/
+
+https://nextjs.org/docs/messages/module-not-found 
+Error updating cotizacion: Error [PrismaClientValidationError]: 
+Invalid `tx.servicioCotizado.createMany()` invocation in
+H:\MegaSync\Proyectos\Cotizador\.next\dev\server\chunks\[root-of-the-server]__0m6a8sk._.js:1058:43
+
+  1055         cotizacionId: id
+  1056     }
+  1057 });
+→ 1058 await tx.servicioCotizado.createMany({
+         data: [
+           {
+             cotizacionId: "cmq79547x00016wu65yh7vuv8",
+             servicioCatalogoId: null,
+             nombre: "Hora de asesoria - $400 MXN/hr + IVA",
+             esPersonalizado: true,
+             horas: null,
+             tarifaHora: 400,
+             modeloCobro: "horas",
+             montoMinimo: null,
+             horasIncluidas: null,
+             opcion: null,
+             fase: 0,
+             tipoPago: "mensual",
+             precio: 400,
+             tiempoEntrega: "Bajo demanda",
+             entregables: [
+               "Asesoria / consultoria bajo demanda: estrategia, revision y acompanamiento",
+               "$400 MXN/hr + IVA - se factura a fin de mes segun horas consumidas"
+             ],
+             beneficios: [],
+             seleccionado: true
+           },
+           {
+             cotizacionId: "cmq79547x00016wu65yh7vuv8",
+             servicioCatalogoId: null,
+             nombre: "Hora de desarrollo - $400 MXN/hr + IVA",
+             esPersonalizado: true,
+             horas: null,
+             tarifaHora: 400,
+             modeloCobro: "horas",
+             montoMinimo: null,
+             horasIncluidas: null,
+             opcion: null,
+             fase: 1,
+             tipoPago: "mensual",
+             precio: 400,
+             tiempoEntrega: "Bajo demanda",
+             entregables: [
+               "Desarrollo / implementacion bajo demanda: n8n, agentes y automatizaciones",
+               "$400 MXN/hr + IVA - se factura a fin de mes segun horas consumidas"
+             ],
+             beneficios: [],
+             seleccionado: true
+           }
+         ]
+       })
+
+Unknown argument `beneficios`. Available options are marked with ?.
+    at <unknown> (src\app\api\cotizaciones\[id]\route.ts:154:35)
+    at async (src\app\api\cotizaciones\[id]\route.ts:154:9)
+    at async PUT (src\app\api\cotizaciones\[id]\route.ts:151:7)
+  152 |         await tx.servicioCotizado.deleteMany({ where: { cotizacionId: id } });
+  153 |
+> 154 |         await tx.servicioCotizado.createMany({
+      |                                   ^
+  155 |           data: servicios.map((serv) => {
+  156 |             let catalogoId: string | null;
+  157 |             if (serv.esPersonalizado) { {
+  clientVersion: '7.8.0'
+}
+Error updating cotizacion: Error [PrismaClientValidationError]: 
+Invalid `tx.servicioCotizado.createMany()` invocation in
+H:\MegaSync\Proyectos\Cotizador\.next\dev\server\chunks\[root-of-the-server]__0m6a8sk._.js:1058:43
+
+  1055         cotizacionId: id
+  1056     }
+  1057 });
+→ 1058 await tx.servicioCotizado.createMany({
+         data: [
+           {
+             cotizacionId: "cmq79547x00016wu65yh7vuv8",
+             servicioCatalogoId: null,
+             nombre: "Hora de asesoria - $400 MXN/hr + IVA",
+             esPersonalizado: true,
+             horas: null,
+             tarifaHora: 400,
+             modeloCobro: "horas",
+             montoMinimo: null,
+             horasIncluidas: null,
+             opcion: null,
+             fase: 0,
+             tipoPago: "mensual",
+             precio: 400,
+             tiempoEntrega: "Bajo demanda",
+             entregables: [
+               "Asesoria / consultoria bajo demanda: estrategia, revision y acompanamiento",
+               "$400 MXN/hr + IVA - se factura a fin de mes segun horas consumidas"
+             ],
+             beneficios: [],
+             seleccionado: true
+           },
+           {
+             cotizacionId: "cmq79547x00016wu65yh7vuv8",
+             servicioCatalogoId: null,
+             nombre: "Hora de desarrollo - $400 MXN/hr + IVA",
+             esPersonalizado: true,
+             horas: null,
+             tarifaHora: 400,
+             modeloCobro: "horas",
+             montoMinimo: null,
+             horasIncluidas: null,
+             opcion: null,
+             fase: 1,
+             tipoPago: "mensual",
+             precio: 400,
+             tiempoEntrega: "Bajo demanda",
+             entregables: [
+               "Desarrollo / implementacion bajo demanda: n8n, agentes y automatizaciones",
+               "$400 MXN/hr + IVA - se factura a fin de mes segun horas consumidas"
+             ],
+             beneficios: [],
+             seleccionado: true
+           }
+         ]
+       })
+
+Unknown argument `beneficios`. Available options are marked with ?.
+    at <unknown> (src\app\api\cotizaciones\[id]\route.ts:154:35)
+    at async (src\app\api\cotizaciones\[id]\route.ts:154:9)
+    at async PUT (src\app\api\cotizaciones\[id]\route.ts:151:7)
+  152 |         await tx.servicioCotizado.deleteMany({ where: { cotizacionId: id } });
+  153 |
+> 154 |         await tx.servicioCotizado.createMany({
+      |                                   ^
+  155 |           data: servicios.map((serv) => {
+  156 |             let catalogoId: string | null;
+  157 |             if (serv.esPersonalizado) { {
+  clientVersion: '7.8.0'
+}
+Error updating cotizacion: Error [PrismaClientValidationError]: 
+Invalid `tx.servicioCotizado.createMany()` invocation in
+H:\MegaSync\Proyectos\Cotizador\.next\dev\server\chunks\[root-of-the-server]__0m6a8sk._.js:1058:43
+
+  1055         cotizacionId: id
+  1056     }
+  1057 });
+→ 1058 await tx.servicioCotizado.createMany({
+         data: [
+           {
+             cotizacionId: "cmq79547x00016wu65yh7vuv8",
+             servicioCatalogoId: null,
+             nombre: "Asesoria y Desarrollo",
+             esPersonalizado: true,
+             horas: null,
+             tarifaHora: 400,
+             modeloCobro: "demanda",
+             montoMinimo: null,
+             horasIncluidas: null,
+             opcion: null,
+             fase: 1,
+             tipoPago: "mensual",
+             precio: 0,
+             tiempoEntrega: "Bajo demanda",
+             entregables: [],
+             beneficios: [],
+             seleccionado: true
+           }
+         ]
+       })
+
+Unknown argument `beneficios`. Available options are marked with ?.
+    at <unknown> (src\app\api\cotizaciones\[id]\route.ts:154:35)
+    at async (src\app\api\cotizaciones\[id]\route.ts:154:9)
+    at async PUT (src\app\api\cotizaciones\[id]\route.ts:151:7)
+  152 |         await tx.servicioCotizado.deleteMany({ where: { cotizacionId: id } });
+  153 |
+> 154 |         await tx.servicioCotizado.createMany({
+      |                                   ^
+  155 |           data: servicios.map((serv) => {
+  156 |             let catalogoId: string | null;
+  157 |             if (serv.esPersonalizado) { {
+  clientVersion: '7.8.0'
+}
+Error updating cotizacion: Error [PrismaClientValidationError]: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].cotizacion.update()` invocation in
+H:\MegaSync\Proyectos\Cotizador\.next\dev\server\chunks\[root-of-the-server]__0m6a8sk._.js:995:151
+
+  992     }
+  993 }
+  994 const esDobleFinal = esDoble ?? existing.esDoble;
+→ 995 await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].cotizacion.update({
+        where: {
+          id: "cmq79547x00016wu65yh7vuv8"
+        },
+        data: {
+          clienteId: "cmq79547m00006wu61a96tlj4",
+          ~~~~~~~~~
+          fecha: new Date("2026-06-09T00:00:00.000Z"),
+          vigencia: new Date("2026-06-30T00:00:00.000Z"),
+          moneda: "MXN",
+          tipoCambio: "NA",
+          proyecto: "Agentes IA",
+          esquemaPago: "Por hora (postpago)",
+          incluirBonos: false,
+          incluirFinanciamiento: false,
+          incluirIva: false,
+          esDoble: false,
+          opcionesMetadata: undefined,
+          observaciones: "Esquema hibrido por hora - postpago. Cobramos por hora consumida (asesoria o desarrollo) a $400 MXN/hr + IVA, bajo demanda y sin minimo ni anticipo. Llevamos una bitacora de horas con acceso para ti; a fin de mes te enviamos el reporte de horas consumidas junto con la factura (invoice). Solo pagas las horas efectivamente trabajadas.",
+      ?   id?: String | StringFieldUpdateOperationsInput,
+      ?   numero?: String | StringFieldUpdateOperationsInput,
+      ?   estado?: String | StringFieldUpdateOperationsInput,
+      ?   createdAt?: DateTime | DateTimeFieldUpdateOperationsInput,
+      ?   updatedAt?: DateTime | DateTimeFieldUpdateOperationsInput,
+      ?   cliente?: ClienteUpdateOneRequiredWithoutCotizacionesNestedInput,
+      ?   asesor?: UserUpdateOneRequiredWithoutCotizacionesNestedInput,
+      ?   servicios?: ServicioCotizadoUpdateManyWithoutCotizacionNestedInput,
+      ?   planBucefalo?: PlanBucefaloCotizacionUpdateOneWithoutCotizacionNestedInput
+        }
+      })
+
+Unknown argument `clienteId`. Did you mean `cliente`? Available options are marked with ?.
+    at <unknown> (src\app\api\cotizaciones\[id]\route.ts:121:29)
+    at async PUT (src\app\api\cotizaciones\[id]\route.ts:121:5)
+  119 |     const esDobleFinal = esDoble ?? existing.esDoble;
+  120 |
+> 121 |     await prisma.cotizacion.update({
+      |                             ^
+  122 |       where: { id },
+  123 |       data: {
+  124 |         ...(clienteIdFinal && { clienteId: clienteIdFinal }), {
+  clientVersion: '7.8.0'
+}
+Error updating cotizacion: Error [PrismaClientValidationError]: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].cotizacion.update()` invocation in
+H:\MegaSync\Proyectos\Cotizador\.next\dev\server\chunks\[root-of-the-server]__0m6a8sk._.js:995:151
+
+  992     }
+  993 }
+  994 const esDobleFinal = esDoble ?? existing.esDoble;
+→ 995 await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].cotizacion.update({
+        where: {
+          id: "cmq79547x00016wu65yh7vuv8"
+        },
+        data: {
+          clienteId: "cmq79547m00006wu61a96tlj4",
+          ~~~~~~~~~
+          fecha: new Date("2026-06-09T00:00:00.000Z"),
+          vigencia: new Date("2026-06-30T00:00:00.000Z"),
+          moneda: "MXN",
+          tipoCambio: "NA",
+          proyecto: "Agentes IA",
+          esquemaPago: "Por hora (postpago)",
+          incluirBonos: false,
+          incluirFinanciamiento: false,
+          incluirIva: true,
+          esDoble: false,
+          opcionesMetadata: undefined,
+          observaciones: "Esquema hibrido por hora - postpago. Cobramos por hora consumida (asesoria o desarrollo) a $400 MXN/hr + IVA, bajo demanda y sin minimo ni anticipo. Llevamos una bitacora de horas con acceso para ti; a fin de mes te enviamos el reporte de horas consumidas junto con la factura (invoice). Solo pagas las horas efectivamente trabajadas.",
+      ?   id?: String | StringFieldUpdateOperationsInput,
+      ?   numero?: String | StringFieldUpdateOperationsInput,
+      ?   estado?: String | StringFieldUpdateOperationsInput,
+      ?   createdAt?: DateTime | DateTimeFieldUpdateOperationsInput,
+      ?   updatedAt?: DateTime | DateTimeFieldUpdateOperationsInput,
+      ?   cliente?: ClienteUpdateOneRequiredWithoutCotizacionesNestedInput,
+      ?   asesor?: UserUpdateOneRequiredWithoutCotizacionesNestedInput,
+      ?   servicios?: ServicioCotizadoUpdateManyWithoutCotizacionNestedInput,
+      ?   planBucefalo?: PlanBucefaloCotizacionUpdateOneWithoutCotizacionNestedInput
+        }
+      })
+
+Unknown argument `clienteId`. Did you mean `cliente`? Available options are marked with ?.
+    at <unknown> (src\app\api\cotizaciones\[id]\route.ts:121:29)
+    at async PUT (src\app\api\cotizaciones\[id]\route.ts:121:5)
+  119 |     const esDobleFinal = esDoble ?? existing.esDoble;
+  120 |
+> 121 |     await prisma.cotizacion.update({
+      |                             ^
+  122 |       where: { id },
+  123 |       data: {
+  124 |         ...(clienteIdFinal && { clienteId: clienteIdFinal }), {
+  clientVersion: '7.8.0'
+}
+Error updating cotizacion: Error [PrismaClientValidationError]: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].cotizacion.update()` invocation in
+H:\MegaSync\Proyectos\Cotizador\.next\dev\server\chunks\[root-of-the-server]__0m6a8sk._.js:995:151
+
+  992     }
+  993 }
+  994 const esDobleFinal = esDoble ?? existing.esDoble;
+→ 995 await __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["prisma"].cotizacion.update({
+        where: {
+          id: "cmq79547x00016wu65yh7vuv8"
+        },
+        data: {
+          clienteId: "cmq79547m00006wu61a96tlj4",
+          ~~~~~~~~~
+          fecha: new Date("2026-06-09T00:00:00.000Z"),
+          vigencia: new Date("2026-06-30T00:00:00.000Z"),
+          moneda: "MXN",
+          tipoCambio: "NA",
+          proyecto: "Agentes IA",
+          esquemaPago: "Por hora (postpago)",
+          incluirBonos: false,
+          incluirFinanciamiento: false,
+          incluirIva: true,
+          esDoble: false,
+          opcionesMetadata: undefined,
+          observaciones: "Esquema hibrido por hora - postpago. Cobramos por hora consumida (asesoria o desarrollo) a $400 MXN/hr + IVA, bajo demanda y sin minimo ni anticipo. Llevamos una bitacora de horas con acceso para ti; a fin de mes te enviamos el reporte de horas consumidas junto con la factura (invoice). Solo pagas las horas efectivamente trabajadas.",
+      ?   id?: String | StringFieldUpdateOperationsInput,
+      ?   numero?: String | StringFieldUpdateOperationsInput,
+      ?   estado?: String | StringFieldUpdateOperationsInput,
+      ?   createdAt?: DateTime | DateTimeFieldUpdateOperationsInput,
+      ?   updatedAt?: DateTime | DateTimeFieldUpdateOperationsInput,
+      ?   cliente?: ClienteUpdateOneRequiredWithoutCotizacionesNestedInput,
+      ?   asesor?: UserUpdateOneRequiredWithoutCotizacionesNestedInput,
+      ?   servicios?: ServicioCotizadoUpdateManyWithoutCotizacionNestedInput,
+      ?   planBucefalo?: PlanBucefaloCotizacionUpdateOneWithoutCotizacionNestedInput
+        }
+      })
+
+Unknown argument `clienteId`. Did you mean `cliente`? Available options are marked with ?.
+    at <unknown> (src\app\api\cotizaciones\[id]\route.ts:121:29)
+    at async PUT (src\app\api\cotizaciones\[id]\route.ts:121:5)
+  119 |     const esDobleFinal = esDoble ?? existing.esDoble;
+  120 |
+> 121 |     await prisma.cotizacion.update({
+      |                             ^
+  122 |       where: { id },
+  123 |       data: {
+  124 |         ...(clienteIdFinal && { clienteId: clienteIdFinal }), {
+  clientVersion: '7.8.0'
+}

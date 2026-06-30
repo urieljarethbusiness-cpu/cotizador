@@ -1,4 +1,4 @@
-"""Cotizador E3 — FastAPI Application
+"""Cotizador — FastAPI Application
 
 REST API + MCP Server for digital marketing quotation management.
 Optimized for n8n workflows and AI agents (OpenClaw, Claude, ChatGPT).
@@ -25,9 +25,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Cotizador E3 API",
+    title="Cotizador API",
     description=(
-        "API REST para el sistema de cotizaciones de marketing digital de Consultoría E3. "
+        "API REST para el sistema de cotizaciones de marketing digital de Uriel Jareth Consulting. "
         "Optimizada para integración con n8n y agentes de IA (OpenClaw, Claude, ChatGPT) "
         "via MCP (Model Context Protocol)."
     ),
@@ -117,7 +117,7 @@ try:
             "name": "cotizador-e3",
             "version": "1.0.0",
             "protocol": "mcp",
-            "description": "MCP server for Cotizador E3 quotation system",
+            "description": "MCP server for Cotizador quotation system",
         }
 except ImportError:
     # MCP SDK not installed, skip MCP mount
@@ -127,7 +127,7 @@ except ImportError:
 @app.get("/", include_in_schema=False)
 async def root():
     return {
-        "name": "Cotizador E3 API",
+        "name": "Cotizador API",
         "version": "1.0.0",
         "docs": "/docs",
         "openapi": "/openapi.json",

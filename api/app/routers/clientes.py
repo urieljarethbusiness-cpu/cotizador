@@ -58,6 +58,7 @@ async def list_clientes(
             empresa=r["empresa"],
             email=r["email"],
             telefono=r["telefono"],
+            rfc=r["rfc"],
             createdAt=r["createdAt"],
             updatedAt=r["updatedAt"],
         )
@@ -82,12 +83,13 @@ async def create_cliente(
     auth: dict = Depends(require_auth),
 ):
     row = await db.fetchrow(
-        'INSERT INTO "Cliente" (nombre, empresa, email, telefono) '
-        "VALUES ($1, $2, $3, $4) RETURNING *",
+        'INSERT INTO "Cliente" (nombre, empresa, email, telefono, rfc) '
+        "VALUES ($1, $2, $3, $4, $5) RETURNING *",
         body.nombre,
         body.empresa,
         body.email,
         body.telefono,
+        body.rfc,
     )
     return ClienteResponse(
         id=row["id"],
@@ -95,6 +97,7 @@ async def create_cliente(
         empresa=row["empresa"],
         email=row["email"],
         telefono=row["telefono"],
+        rfc=row["rfc"],
         createdAt=row["createdAt"],
         updatedAt=row["updatedAt"],
     )
@@ -127,6 +130,7 @@ async def get_cliente(
         empresa=row["empresa"],
         email=row["email"],
         telefono=row["telefono"],
+        rfc=row["rfc"],
         createdAt=row["createdAt"],
         updatedAt=row["updatedAt"],
     )
@@ -156,7 +160,7 @@ async def update_cliente(
     params: list = []
     idx = 1
 
-    for field in ("nombre", "empresa", "email", "telefono"):
+    for field in ("nombre", "empresa", "email", "telefono", "rfc"):
         value = getattr(body, field, None)
         if value is not None:
             updates.append(f"{field} = ${idx}")
@@ -178,6 +182,7 @@ async def update_cliente(
         empresa=row["empresa"],
         email=row["email"],
         telefono=row["telefono"],
+        rfc=row["rfc"],
         createdAt=row["createdAt"],
         updatedAt=row["updatedAt"],
     )

@@ -1,7 +1,7 @@
 @echo off
-title Cotizador E3 - Iniciando...
+title Cotizador - Iniciando...
 echo ============================================
-echo    Cotizador E3 - Iniciando Servidor
+echo    Cotizador - Iniciando Servidor
 echo ============================================
 echo.
 

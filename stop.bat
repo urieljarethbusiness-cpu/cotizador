@@ -1,7 +1,7 @@
 @echo off
-title Cotizador E3 - Deteniendo...
+title Cotizador - Deteniendo...
 echo ============================================
-echo    Cotizador E3 - Deteniendo Servidor
+echo    Cotizador - Deteniendo Servidor
 echo ============================================
 echo.
 

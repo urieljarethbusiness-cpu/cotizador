@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
         entregablesDefault: parsed.data.entregablesDefault,
         categoriaId: parsed.data.categoriaId,
         variante: parsed.data.variante,
+        nivel: parsed.data.nivel ?? null,
         activo: true,
         orden: parsed.data.orden,
       },

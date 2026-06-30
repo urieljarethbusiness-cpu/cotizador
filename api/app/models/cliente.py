@@ -10,6 +10,7 @@ class ClienteBase(BaseModel):
     empresa: str | None = Field(None, description="Nombre de la empresa")
     email: str | None = Field(None, description="Email de contacto")
     telefono: str | None = Field(None, description="Teléfono de contacto")
+    rfc: str | None = Field(None, description="RFC del cliente (solo si se facturará)")
 
 
 class ClienteCreate(ClienteBase):
@@ -21,6 +22,7 @@ class ClienteUpdate(BaseModel):
     empresa: str | None = None
     email: str | None = None
     telefono: str | None = None
+    rfc: str | None = None
 
 
 class ClienteResponse(ClienteBase):

@@ -43,6 +43,7 @@ class ServicioCatalogoBase(BaseModel):
     entregablesDefault: list[str] = Field(default_factory=list, description="Lista de entregables")
     categoriaId: str = Field(..., min_length=1, description="ID de la categoría")
     variante: str | None = None
+    nivel: str | None = Field(None, description="Nivel/tier: Emprendedor, PYME, Empresario, Corporativo")
     orden: int = Field(0, ge=0)
 
 
@@ -60,6 +61,7 @@ class ServicioCatalogoUpdate(BaseModel):
     entregablesDefault: list[str] | None = None
     categoriaId: str | None = None
     variante: str | None = None
+    nivel: str | None = None
     activo: bool | None = None
     orden: int | None = Field(None, ge=0)
 

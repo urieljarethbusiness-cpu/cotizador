@@ -41,7 +41,7 @@ class HealthResponse(BaseModel):
 
 
 class APIInfoResponse(BaseModel):
-    name: str = "Cotizador E3 API"
+    name: str = "Cotizador API"
     version: str = "1.0.0"
     description: str = "API para sistema de cotizaciones de marketing digital"
     capabilities: list[str] = Field(default_factory=list)

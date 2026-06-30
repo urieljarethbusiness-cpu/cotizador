@@ -1,0 +1,7 @@
+# Excluir de la sincronizacion de MegaSync.
+# Estas carpetas tienen junction points (symlinks de Windows) y artefactos
+# de build que cambian constantemente; sincronizarlas hace que MegaSync pelee
+# con Turbopack y provoca el panic "failed to create junction point (os error 145)".
+-:.next
+-:node_modules
+-:.turbo

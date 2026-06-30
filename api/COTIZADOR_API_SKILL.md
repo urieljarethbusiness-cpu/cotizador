@@ -1,8 +1,8 @@
-# Cotizador E3 — API Documentation for AI Skills
+# Cotizador — API Documentation for AI Skills
 
 ## Overview
 
-REST API for Consultoría E3's digital marketing quotation system. Allows AI agents to manage clients, browse service catalogs, create quotations, calculate financing, generate PDF/Excel documents, and manage the full sales pipeline.
+REST API for Uriel Jareth Consulting's digital marketing quotation system. Allows AI agents to manage clients, browse service catalogs, create quotations, calculate financing, generate PDF/Excel documents, and manage the full sales pipeline.
 
 **Base URL:** `http://localhost:8000`
 **Auth:** API Key via `X-API-Key` header or `Authorization: Bearer <key>`
@@ -13,7 +13,7 @@ REST API for Consultoría E3's digital marketing quotation system. Allows AI age
 
 ## Domain Context
 
-Consultoría E3 is a digital marketing agency in Querétaro, México. Services are organized in 4 project phases:
+Uriel Jareth Consulting is a digital marketing agency in Querétaro, México. Services are organized in 4 project phases:
 
 - **Fase 0 — Auditoría / Acompañamiento:** Initial assessments and ongoing consulting
 - **Fase 1 — Setup e Infraestructura:** One-time setup (websites, branding, CRM config)
@@ -59,7 +59,7 @@ Health check endpoint. No auth required.
 
 #### GET /api-info
 API capabilities and version info.
-- **Response:** `{ "name": "Cotizador E3 API", "version": "1.0.0", "capabilities": [...] }`
+- **Response:** `{ "name": "Cotizador API", "version": "1.0.0", "capabilities": [...] }`
 
 ---
 

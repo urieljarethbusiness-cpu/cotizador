@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cotizador
 
-## Getting Started
+Sistema de generación de cotizaciones para Uriel Jareth Consulting (marketing digital, Querétaro MX).
+Servicios organizados en 4 fases, dos tipos de pago (único / mensual), planes CRM Bucéfalo
+y financiamiento opcional. Exporta a PDF y Excel.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Frontend / app web:** Next.js 16 (App Router) + React 19 + Tailwind CSS v4 + Zustand
+- **ORM:** Prisma 7 (cliente generado en `src/generated/prisma`, driver adapter `PrismaPg`)
+- **Base de datos:** PostgreSQL 16 (vía Docker)
+- **Auth:** JWT (`jose`) en cookie httpOnly, contraseñas con `bcryptjs`
+- **API alterna:** servicio Python FastAPI + servidor MCP en [`api/`](api/) (para n8n / agentes de IA)
+
+## Requisitos
+
+- Node.js 20+
+- Docker (para PostgreSQL)
+- Un archivo `.env` en la raíz con: `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `JWT_SECRET`
+
+## Arranque rápido (Windows)
+
+```bat
+start.bat   :: levanta PostgreSQL en Docker, aplica migraciones y arranca Next.js
+stop.bat    :: detiene todo
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Arranque manual
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+docker compose up -d postgres   # base de datos
+npx prisma migrate deploy        # aplica migraciones
+npx tsx prisma/seed.ts           # carga catálogo (idempotente)
+npm run dev                      # http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Comandos
 
-## Learn More
+| Comando | Propósito |
+|---------|-----------|
+| `npm run dev` | Servidor de desarrollo (puerto 3000) |
+| `npm run build` | Build de producción (incluye chequeo de tipos) |
+| `npm run lint` | ESLint |
+| `npm run db:migrate` | `prisma migrate dev` |
+| `npm run db:seed` | Carga de datos semilla |
+| `npm run db:studio` | Prisma Studio |
+| `npm run db:generate` | Regenera el cliente Prisma |
 
-To learn more about Next.js, take a look at the following resources:
+## API Python (opcional)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+cd api
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000   # Swagger en /docs, MCP en /mcp
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Referencia completa de endpoints en [`api/COTIZADOR_API_SKILL.md`](api/COTIZADOR_API_SKILL.md).
 
-## Deploy on Vercel
+## Documentación para agentes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Las convenciones del proyecto, gotchas de Prisma 7 / PDFKit / Next.js 16 y el modelo de datos
+están en [`AGENTS.md`](AGENTS.md) (importado por `CLAUDE.md`).

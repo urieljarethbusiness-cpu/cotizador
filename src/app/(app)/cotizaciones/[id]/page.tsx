@@ -1,12 +1,22 @@
 import { prisma } from "@/lib/db";
-import { formatDate, formatCurrency, IVA_RATE } from "@/lib/calculators";
+import { getConfigBranding } from "@/lib/config-helpers";
+import {
+  formatDate,
+  formatCurrency,
+  calcularTotalesOpcion,
+  esCotizacionPorTiempo,
+  tarifaHoraSugerida,
+  IVA_RATE,
+  type MetaOpcion,
+} from "@/lib/calculators";
 import Link from "next/link";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { notFound } from "next/navigation";
-import { ExportExcelButtonSaved, ExportPDFButtonSaved } from "@/components/ExportButtons";
+import { ExportExcelButtonSaved, ExportPDFButtonSaved, PreviewPDFButtonSaved } from "@/components/ExportButtons";
 import { DeleteCotizacionButton } from "./DeleteButton";
 import { CambiarEstadoButtons } from "./CambiarEstadoButtons";
 import { PreciosEditables } from "./PreciosEditables";
+import { RegistroHorasPanel } from "./RegistroHorasPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -23,26 +33,44 @@ export default async function CotizacionDetailPage({
       asesor: true,
       servicios: { include: { servicioCatalogo: true } },
       planBucefalo: true,
+      registrosHoras: { orderBy: [{ fecha: "asc" }, { horaInicio: "asc" }] },
     },
   });
 
   if (!cot) notFound();
 
+  // El registro de horas (notas de pago) solo aplica a cotizaciones aprobadas que se
+  // cobran por tiempo (horas/retainer/demanda).
+  const mostrarHoras = cot.estado === "aprobada" && esCotizacionPorTiempo(cot.servicios);
+  const branding = mostrarHoras ? await getConfigBranding() : null;
+
   const serviciosUnicos = cot.servicios
     .filter((s) => s.tipoPago === "unico" && s.seleccionado)
     .map((s) => ({
       id: s.id,
-      nombre: s.servicioCatalogo?.nombre || "Servicio",
+      nombre: s.servicioCatalogo?.nombre || s.nombre || "Servicio",
       precio: s.precio,
+      modeloCobro: s.modeloCobro,
+      tarifaHora: s.tarifaHora,
     }));
 
   const serviciosMensuales = cot.servicios
     .filter((s) => s.tipoPago === "mensual" && s.seleccionado)
     .map((s) => ({
       id: s.id,
-      nombre: s.servicioCatalogo?.nombre || "Servicio",
+      nombre: s.servicioCatalogo?.nombre || s.nombre || "Servicio",
       precio: s.precio,
+      modeloCobro: s.modeloCobro,
+      tarifaHora: s.tarifaHora,
     }));
+
+  const opcionesMeta = (cot.opcionesMetadata as { "1"?: MetaOpcion; "2"?: MetaOpcion } | null) ?? {};
+  const totalesOpcion = cot.esDoble
+    ? {
+        "1": calcularTotalesOpcion(cot.servicios, "1"),
+        "2": calcularTotalesOpcion(cot.servicios, "2"),
+      }
+    : null;
 
   return (
     <div>
@@ -62,6 +90,7 @@ export default async function CotizacionDetailPage({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <PreviewPDFButtonSaved cotizacionId={cot.id} />
           <ExportPDFButtonSaved cotizacionId={cot.id} />
           <ExportExcelButtonSaved cotizacionId={cot.id} />
           <Link
@@ -76,7 +105,7 @@ export default async function CotizacionDetailPage({
       </div>
 
       <div className="bg-card-bg rounded-xl border border-border p-5 mb-6">
-        <h2 className="font-semibold text-lg mb-4">Informacion de la Cotizacion</h2>
+        <h2 className="font-semibold text-lg mb-4">Información de la Cotización</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
             <span className="text-muted">Cliente</span>
@@ -115,11 +144,83 @@ export default async function CotizacionDetailPage({
         </div>
       </div>
 
+      {cot.esDoble && totalesOpcion && (
+        <div className="bg-card-bg rounded-xl border border-border p-5 mb-6">
+          <h2 className="font-semibold text-lg mb-4">
+            Doble propuesta — comparativa
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {(["1", "2"] as const).map((op) => {
+              const t = totalesOpcion[op];
+              const meta = opcionesMeta[op];
+              return (
+                <div key={op} className="border border-primary/30 rounded-lg p-4 bg-primary-light/10">
+                  <h3 className="font-semibold text-primary">
+                    Opcion {op}
+                    {meta?.titulo ? `: ${meta.titulo}` : ""}
+                  </h3>
+                  {meta?.descripcion && (
+                    <p className="text-sm text-muted mt-1 whitespace-pre-wrap">{meta.descripcion}</p>
+                  )}
+                  {meta?.noIncluye && (
+                    <p className="text-xs text-muted mt-2">
+                      <span className="font-medium">No incluye:</span>{" "}
+                      <span className="whitespace-pre-wrap">{meta.noIncluye}</span>
+                    </p>
+                  )}
+                  <div className="mt-3 pt-3 border-t border-border space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span>Total unico (c/IVA)</span>
+                      <span className="font-medium">{formatCurrency(t.totalUnico * (1 + IVA_RATE))}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Total mensual (c/IVA)</span>
+                      <span className="font-medium">{formatCurrency(t.totalMensual * (1 + IVA_RATE))}</span>
+                    </div>
+                    {t.horas > 0 && (
+                      <div className="flex justify-between text-muted text-xs">
+                        <span>Horas estimadas</span>
+                        <span>{t.horas} h</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-xs text-muted mt-3">
+            Las partidas marcadas <b>Ambas</b> suman en las dos opciones. Edita la asignacion de cada partida desde <b>Editar</b>.
+          </p>
+        </div>
+      )}
+
       <PreciosEditables
         cotizacionId={cot.id}
         serviciosUnicos={serviciosUnicos}
         serviciosMensuales={serviciosMensuales}
       />
+
+      {mostrarHoras && (
+        <RegistroHorasPanel
+          cotizacionId={cot.id}
+          numero={cot.numero}
+          clienteNombre={cot.cliente.nombre}
+          clienteEmpresa={cot.cliente.empresa}
+          proyecto={cot.proyecto}
+          tarifaSugerida={tarifaHoraSugerida(cot.servicios)}
+          incluirIva={cot.incluirIva}
+          branding={branding ?? {}}
+          registrosIniciales={cot.registrosHoras.map((r) => ({
+            id: r.id,
+            fecha: r.fecha.toISOString(),
+            horaInicio: r.horaInicio,
+            horaFin: r.horaFin,
+            horas: r.horas,
+            tarifaHora: r.tarifaHora,
+            descripcion: r.descripcion,
+          }))}
+        />
+      )}
 
       {cot.observaciones && (
         <div className="bg-card-bg rounded-xl border border-border p-5">

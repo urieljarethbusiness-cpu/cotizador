@@ -8,7 +8,17 @@ export const dynamic = "force-dynamic";
 export default async function CotizacionesPage() {
   const cotizaciones = await prisma.cotizacion.findMany({
     orderBy: { createdAt: "desc" },
-    include: { cliente: true, asesor: true, servicios: true },
+    select: {
+      id: true,
+      numero: true,
+      estado: true,
+      fecha: true,
+      cliente: { select: { nombre: true, empresa: true } },
+      asesor: { select: { name: true } },
+      servicios: {
+        select: { tipoPago: true, seleccionado: true, precio: true },
+      },
+    },
   });
 
   return (
@@ -25,7 +35,7 @@ export default async function CotizacionesPage() {
           className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-medium text-sm"
         >
           <Plus className="w-4 h-4" />
-          Nueva Cotizacion
+          Nueva Cotización
         </Link>
       </div>
 
@@ -36,14 +46,14 @@ export default async function CotizacionesPage() {
             No hay cotizaciones
           </h2>
           <p className="text-muted mb-4">
-            Comienza creando tu primera cotizacion
+            Comienza creando tu primera cotización
           </p>
           <Link
             href="/cotizaciones/nueva"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark"
           >
             <Plus className="w-4 h-4" />
-            Crear Cotizacion
+            Crear Cotización
           </Link>
         </div>
       ) : (
